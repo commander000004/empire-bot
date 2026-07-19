@@ -1,5 +1,5 @@
-import sqlite3
-import time
+import json
+import os
 
 from config import (
     START_COIN,
@@ -9,227 +9,145 @@ from config import (
     START_BANK
 )
 
+DATABASE_FILE = "users.json"
 
-# ==================================================
-# DATABASE
-# ==================================================
 
-DATABASE_NAME = "empire.db"
+# -------------------------
+# LOAD / SAVE
+# -------------------------
 
+def load_users():
 
-conn = sqlite3.connect(DATABASE_NAME)
+    if not os.path.exists(DATABASE_FILE):
+        return []
 
-conn.row_factory = sqlite3.Row
+    with open(
+        DATABASE_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
 
-cursor = conn.cursor()
+        return json.load(file)
 
-cursor.execute("PRAGMA foreign_keys = ON;")
 
+def save_users(users):
 
-# ==================================================
-# CREATE TABLES
-# ==================================================
+    with open(
+        DATABASE_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
 
-def create_tables():
+        json.dump(
+            users,
+            file,
+            indent=4,
+            ensure_ascii=False
+        )
 
-    # ---------------- USERS ----------------
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS users (
+# -------------------------
+# GAME ID
+# -------------------------
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+def get_next_game_id():
 
-        game_id INTEGER UNIQUE NOT NULL,
+    users = load_users()
 
-        bale_id INTEGER UNIQUE NOT NULL,
+    if not users:
+        return 1
 
-        name TEXT NOT NULL,
+    return max(
+        user["game_id"]
+        for user in users
+    ) + 1
 
-        coin INTEGER NOT NULL DEFAULT 0,
 
-        gem INTEGER NOT NULL DEFAULT 0,
+# -------------------------
+# FIND USERS
+# -------------------------
 
-        level INTEGER NOT NULL DEFAULT 1,
+def get_user_by_bale_id(bale_id):
 
-        xp INTEGER NOT NULL DEFAULT 0,
+    users = load_users()
 
-        job TEXT,
+    for user in users:
 
-        last_work INTEGER NOT NULL DEFAULT 0
+        if user["bale_id"] == bale_id:
+            return user
 
-    )
-    """)
+    return None
 
-    # ---------------- BANK ----------------
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS bank (
+def get_user_by_game_id(game_id):
 
-        user_id INTEGER PRIMARY KEY,
+    users = load_users()
 
-        balance INTEGER NOT NULL DEFAULT 0,
+    for user in users:
 
-        account TEXT UNIQUE,
+        if user["game_id"] == game_id:
+            return user
 
-        card TEXT UNIQUE,
+    return None
 
-        loan INTEGER NOT NULL DEFAULT 0,
 
-        loan_time INTEGER NOT NULL DEFAULT 0,
+def get_user_by_card(card):
 
-        FOREIGN KEY(user_id)
-            REFERENCES users(id)
-            ON DELETE CASCADE
+    users = load_users()
 
-    )
-    """)
+    for user in users:
 
-    # ---------------- INVENTORY ----------------
+        if user["bank"]["card"] == card:
+            return user
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS inventory (
+    return None
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        user_id INTEGER NOT NULL,
+def get_user_by_account(account):
 
-        item TEXT NOT NULL,
+    users = load_users()
 
-        count INTEGER NOT NULL DEFAULT 1,
+    for user in users:
 
-        FOREIGN KEY(user_id)
-            REFERENCES users(id)
-            ON DELETE CASCADE
+        if user["bank"]["account"] == account:
+            return user
 
-    )
-    """)
+    return None
 
-    # ---------------- CRYPTO ----------------
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS crypto (
+# -------------------------
+# CREATE USER
+# -------------------------
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+def create_user(bale_id, name):
 
-        user_id INTEGER NOT NULL,
+    users = load_users()
 
-        symbol TEXT NOT NULL,
+    user = {
 
-        amount REAL NOT NULL DEFAULT 0,
+        "game_id": get_next_game_id(),
 
-        FOREIGN KEY(user_id)
-            REFERENCES users(id)
-            ON DELETE CASCADE
+        "bale_id": bale_id,
 
-    )
-    """)
+        "name": name,
 
-    # ---------------- TRANSACTIONS ----------------
+        # Economy
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS transactions (
+        "coin": START_COIN,
+        "gem": START_GEM,
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        # Level
 
-        sender_id INTEGER,
+        "level": START_LEVEL,
+        "xp": START_XP,
 
-        receiver_id INTEGER,
+        # Job
 
-        amount INTEGER NOT NULL,
+        "job": None,
 
-        tax INTEGER NOT NULL DEFAULT 0,
+        # Bank
 
-        type TEXT NOT NULL,
-
-        created_at INTEGER NOT NULL,
-
-        FOREIGN KEY(sender_id)
-            REFERENCES users(id)
-            ON DELETE SET NULL,
-
-        FOREIGN KEY(receiver_id)
-            REFERENCES users(id)
-            ON DELETE SET NULL
-
-    )
-    """)
-
-    # ---------------- ADMIN LOGS ----------------
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS admin_logs (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        admin_id INTEGER NOT NULL,
-
-        action TEXT NOT NULL,
-
-        target_id INTEGER,
-
-        amount INTEGER,
-
-        created_at INTEGER NOT NULL,
-
-        FOREIGN KEY(admin_id)
-            REFERENCES users(id)
-            ON DELETE CASCADE
-
-    )
-    """)
-
-    conn.commit()
-
-
-create_tables()
-# ==================================================
-# USER HELPERS
-# ==================================================
-
-def row_to_user(row):
-
-    if row is None:
-        return None
-
-    user = dict(row)
-
-    # ---------------- BANK ----------------
-
-    cursor.execute(
-        """
-        SELECT
-            balance,
-            account,
-            card,
-            loan,
-            loan_time
-        FROM bank
-        WHERE user_id = ?
-        """,
-        (user["id"],)
-    )
-
-    bank = cursor.fetchone()
-
-    if bank:
-
-        user["bank"] = {
-
-            "balance": bank["balance"],
-
-            "account": bank["account"],
-
-            "card": bank["card"],
-
-            "loan": bank["loan"],
-
-            "loan_time": bank["loan_time"]
-
-        }
-
-    else:
-
-        user["bank"] = {
+        "bank": {
 
             "balance": START_BANK,
 
@@ -241,355 +159,68 @@ def row_to_user(row):
 
             "loan_time": 0
 
-        }
+        },
 
-    # ---------------- INVENTORY ----------------
+        # Items
 
-    cursor.execute(
-        """
-        SELECT item, count
-        FROM inventory
-        WHERE user_id = ?
-        """,
-        (user["id"],)
-    )
+        "inventory": [
+            "داس"
+        ],
 
-    inventory = []
+        # Work
 
-    for item in cursor.fetchall():
+        "last_work": 0,
 
-        for _ in range(item["count"]):
+        # Crypto
 
-            inventory.append(item["item"])
+        "crypto": {}
 
-    user["inventory"] = inventory
+    }
 
-    # ---------------- CRYPTO ----------------
+    users.append(user)
 
-    cursor.execute(
-        """
-        SELECT symbol, amount
-        FROM crypto
-        WHERE user_id = ?
-        """,
-        (user["id"],)
-    )
-
-    crypto = {}
-
-    for coin in cursor.fetchall():
-
-        crypto[coin["symbol"]] = coin["amount"]
-
-    user["crypto"] = crypto
+    save_users(users)
 
     return user
+    
+    # -------------------------
+# UPDATE USER
+# -------------------------
 
+def update_user(updated_user):
 
-# ==================================================
-# GAME ID
-# ==================================================
+    users = load_users()
 
-def get_next_game_id():
+    for index, user in enumerate(users):
 
-    cursor.execute(
-        "SELECT MAX(game_id) AS max_id FROM users"
-    )
+        if user["bale_id"] == updated_user["bale_id"]:
 
-    row = cursor.fetchone()
+            users[index] = updated_user
 
-    if row["max_id"] is None:
+            break
 
-        return 1
+    save_users(users)
 
-    return row["max_id"] + 1
 
-
-# ==================================================
-# FIND USER
-# ==================================================
-
-def get_user_by_bale_id(bale_id):
-
-    cursor.execute(
-        """
-        SELECT *
-        FROM users
-        WHERE bale_id = ?
-        """,
-        (bale_id,)
-    )
-
-    return row_to_user(cursor.fetchone())
-
-
-def get_user_by_game_id(game_id):
-
-    cursor.execute(
-        """
-        SELECT *
-        FROM users
-        WHERE game_id = ?
-        """,
-        (game_id,)
-    )
-
-    return row_to_user(cursor.fetchone())
-
-
-def get_user_by_card(card):
-
-    cursor.execute(
-        """
-        SELECT users.*
-        FROM users
-        JOIN bank
-        ON users.id = bank.user_id
-        WHERE bank.card = ?
-        """,
-        (card,)
-    )
-
-    return row_to_user(cursor.fetchone())
-
-
-def get_user_by_account(account):
-
-    cursor.execute(
-        """
-        SELECT users.*
-        FROM users
-        JOIN bank
-        ON users.id = bank.user_id
-        WHERE bank.account = ?
-        """,
-        (account,)
-    )
-
-    return row_to_user(cursor.fetchone())# ==================================================
-# CREATE / UPDATE USER
-# ==================================================
-
-def create_user(bale_id, name):
-
-    game_id = get_next_game_id()
-
-    cursor.execute(
-        """
-        INSERT INTO users (
-
-            game_id,
-            bale_id,
-            name,
-            coin,
-            gem,
-            level,
-            xp,
-            job,
-            last_work
-
-        )
-
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            game_id,
-            bale_id,
-            name,
-            START_COIN,
-            START_GEM,
-            START_LEVEL,
-            START_XP,
-            None,
-            0
-        )
-    )
-
-    user_id = cursor.lastrowid
-
-    cursor.execute(
-        """
-        INSERT INTO bank (
-
-            user_id,
-            balance,
-            account,
-            card,
-            loan,
-            loan_time
-
-        )
-
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (
-            user_id,
-            START_BANK,
-            None,
-            None,
-            0,
-            0
-        )
-    )
-
-    cursor.execute(
-        """
-        INSERT INTO inventory (
-
-            user_id,
-            item,
-            count
-
-        )
-
-        VALUES (?, ?, ?)
-        """,
-        (
-            user_id,
-            "داس",
-            1
-        )
-    )
-
-    conn.commit()
-
-    return get_user_by_bale_id(bale_id)
-
-
-def update_user(user):
-
-    cursor.execute(
-        """
-        UPDATE users
-
-        SET
-
-            name = ?,
-            coin = ?,
-            gem = ?,
-            level = ?,
-            xp = ?,
-            job = ?,
-            last_work = ?
-
-        WHERE bale_id = ?
-        """,
-        (
-            user["name"],
-            user["coin"],
-            user["gem"],
-            user["level"],
-            user["xp"],
-            user["job"],
-            user["last_work"],
-            user["bale_id"]
-        )
-    )
-
-    cursor.execute(
-        """
-        UPDATE bank
-
-        SET
-
-            balance = ?,
-            account = ?,
-            card = ?,
-            loan = ?,
-            loan_time = ?
-
-        WHERE user_id = ?
-        """,
-        (
-            user["bank"]["balance"],
-            user["bank"]["account"],
-            user["bank"]["card"],
-            user["bank"]["loan"],
-            user["bank"]["loan_time"],
-            user["id"]
-        )
-    )
-
-    cursor.execute(
-        "DELETE FROM inventory WHERE user_id = ?",
-        (user["id"],)
-    )
-
-    items = {}
-
-    for item in user["inventory"]:
-
-        items[item] = items.get(item, 0) + 1
-
-    for item, count in items.items():
-
-        cursor.execute(
-            """
-            INSERT INTO inventory (
-
-                user_id,
-                item,
-                count
-
-            )
-
-            VALUES (?, ?, ?)
-            """,
-            (
-                user["id"],
-                item,
-                count
-            )
-        )
-
-    cursor.execute(
-        "DELETE FROM crypto WHERE user_id = ?",
-        (user["id"],)
-    )
-
-    for symbol, amount in user["crypto"].items():
-
-        cursor.execute(
-            """
-            INSERT INTO crypto (
-
-                user_id,
-                symbol,
-                amount
-
-            )
-
-            VALUES (?, ?, ?)
-            """,
-            (
-                user["id"],
-                symbol,
-                amount
-            )
-        )
-
-    conn.commit()# ==================================================
+# -------------------------
 # COIN SYSTEM
-# ==================================================
+# -------------------------
 
 def add_coin(user, amount):
-
-    if amount <= 0:
-        return False
 
     user["coin"] += amount
 
     update_user(user)
 
-    return True
-
 
 def remove_coin(user, amount):
 
     if amount <= 0:
+
         return False
 
     if user["coin"] < amount:
+
         return False
 
     user["coin"] -= amount
@@ -599,13 +230,14 @@ def remove_coin(user, amount):
     return True
 
 
-# ==================================================
+# -------------------------
 # BANK SYSTEM
-# ==================================================
+# -------------------------
 
 def add_bank_money(user, amount):
 
     if amount <= 0:
+
         return False
 
     user["bank"]["balance"] += amount
@@ -618,9 +250,11 @@ def add_bank_money(user, amount):
 def remove_bank_money(user, amount):
 
     if amount <= 0:
+
         return False
 
     if user["bank"]["balance"] < amount:
+
         return False
 
     user["bank"]["balance"] -= amount
@@ -629,6 +263,75 @@ def remove_bank_money(user, amount):
 
     return True
 
+
+def set_bank_account(user, account):
+
+    user["bank"]["account"] = account
+
+    update_user(user)
+
+
+def set_bank_card(user, card):
+
+    user["bank"]["card"] = card
+
+    update_user(user)
+    
+    # -------------------------
+# LOAN SYSTEM
+# -------------------------
+
+def set_loan(user, amount, loan_time):
+
+    user["bank"]["loan"] = amount
+    user["bank"]["loan_time"] = loan_time
+
+    update_user(user)
+
+
+def remove_loan(user):
+
+    user["bank"]["loan"] = 0
+    user["bank"]["loan_time"] = 0
+
+    update_user(user)
+
+
+# -------------------------
+# CHECK SYSTEM
+# -------------------------
+
+def card_exists(card):
+
+    return get_user_by_card(card) is not None
+
+
+def account_exists(account):
+
+    return get_user_by_account(account) is not None
+
+
+# -------------------------
+# ACCOUNT INFO
+# -------------------------
+
+def has_bank_account(user):
+
+    return user["bank"]["account"] is not None
+
+
+def has_bank_card(user):
+
+    return user["bank"]["card"] is not None
+
+
+def get_bank_balance(user):
+
+    return user["bank"]["balance"]
+    
+    # -------------------------
+# BANK TOOLS
+# -------------------------
 
 def deposit_coin(user, amount):
 
@@ -639,7 +342,6 @@ def deposit_coin(user, amount):
         return False
 
     user["coin"] -= amount
-
     user["bank"]["balance"] += amount
 
     update_user(user)
@@ -656,7 +358,6 @@ def withdraw_coin(user, amount):
         return False
 
     user["bank"]["balance"] -= amount
-
     user["coin"] += amount
 
     update_user(user)
@@ -673,411 +374,9 @@ def transfer_bank_money(sender, receiver, amount):
         return False
 
     sender["bank"]["balance"] -= amount
-
     receiver["bank"]["balance"] += amount
 
     update_user(sender)
-
     update_user(receiver)
 
     return True
-
-
-# ==================================================
-# BANK ACCOUNT
-# ==================================================
-
-def set_bank_account(user, account):
-
-    user["bank"]["account"] = account
-
-    update_user(user)
-
-
-def set_bank_card(user, card):
-
-    user["bank"]["card"] = card
-
-    update_user(user)
-
-
-def set_loan(user, amount, loan_time):
-
-    user["bank"]["loan"] = amount
-
-    user["bank"]["loan_time"] = loan_time
-
-    update_user(user)
-
-
-def remove_loan(user):
-
-    user["bank"]["loan"] = 0
-
-    user["bank"]["loan_time"] = 0
-
-    update_user(user)
-
-
-# ==================================================
-# CHECK SYSTEM
-# ==================================================
-
-def card_exists(card):
-
-    return get_user_by_card(card) is not None
-
-
-def account_exists(account):
-
-    return get_user_by_account(account) is not None
-
-
-def has_bank_account(user):
-
-    return user["bank"]["account"] is not None
-
-
-def has_bank_card(user):
-
-    return user["bank"]["card"] is not None
-
-
-def get_bank_balance(user):
-
-    return user["bank"]["balance"]# ==================================================
-# INVENTORY SYSTEM
-# ==================================================
-
-def has_item(user, item):
-
-    return item in user["inventory"]
-
-
-def add_item(user, item, count=1):
-
-    if count <= 0:
-        return False
-
-    for _ in range(count):
-        user["inventory"].append(item)
-
-    update_user(user)
-
-    return True
-
-
-def remove_item(user, item, count=1):
-
-    if count <= 0:
-        return False
-
-    if user["inventory"].count(item) < count:
-        return False
-
-    for _ in range(count):
-        user["inventory"].remove(item)
-
-    update_user(user)
-
-    return True
-
-
-def get_item_count(user, item):
-
-    return user["inventory"].count(item)
-
-
-def clear_inventory(user):
-
-    user["inventory"].clear()
-
-    update_user(user)
-
-
-# ==================================================
-# CRYPTO SYSTEM
-# ==================================================
-
-def get_crypto_amount(user, symbol):
-
-    return user["crypto"].get(symbol.upper(), 0)
-
-
-def set_crypto(user, symbol, amount):
-
-    symbol = symbol.upper()
-
-    if amount <= 0:
-
-        user["crypto"].pop(symbol, None)
-
-    else:
-
-        user["crypto"][symbol] = amount
-
-    update_user(user)
-
-
-def add_crypto(user, symbol, amount):
-
-    if amount <= 0:
-        return False
-
-    symbol = symbol.upper()
-
-    user["crypto"][symbol] = (
-        user["crypto"].get(symbol, 0) + amount
-    )
-
-    update_user(user)
-
-    return True
-
-
-def remove_crypto(user, symbol, amount):
-
-    if amount <= 0:
-        return False
-
-    symbol = symbol.upper()
-
-    current = user["crypto"].get(symbol, 0)
-
-    if current < amount:
-        return False
-
-    current -= amount
-
-    if current == 0:
-
-        del user["crypto"][symbol]
-
-    else:
-
-        user["crypto"][symbol] = current
-
-    update_user(user)
-
-    return True
-
-
-# ==================================================
-# DATABASE TOOLS
-# ==================================================
-
-def commit():
-
-    conn.commit()
-
-
-def close():
-
-    conn.commit()
-
-    conn.close()# ==================================================
-# TRANSACTION SYSTEM
-# ==================================================
-
-import time
-
-
-def add_transaction(
-    sender_id,
-    receiver_id,
-    amount,
-    tx_type,
-    tax=0
-):
-
-    cursor.execute(
-        """
-        INSERT INTO transactions (
-
-            sender_id,
-            receiver_id,
-            amount,
-            tax,
-            type,
-            created_at
-
-        )
-
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (
-            sender_id,
-            receiver_id,
-            amount,
-            tax,
-            tx_type,
-            int(time.time())
-        )
-    )
-
-    conn.commit()
-
-
-def get_transactions(user_id, limit=20):
-
-    cursor.execute(
-        """
-        SELECT *
-
-        FROM transactions
-
-        WHERE
-            sender_id = ?
-            OR receiver_id = ?
-
-        ORDER BY id DESC
-
-        LIMIT ?
-        """,
-        (
-            user_id,
-            user_id,
-            limit
-        )
-    )
-
-    return [dict(row) for row in cursor.fetchall()]
-
-
-# ==================================================
-# ADMIN LOG SYSTEM
-# ==================================================
-
-def add_admin_log(
-    admin_id,
-    action,
-    target_id=None,
-    amount=None
-):
-
-    cursor.execute(
-        """
-        INSERT INTO admin_logs (
-
-            admin_id,
-            action,
-            target_id,
-            amount,
-            created_at
-
-        )
-
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (
-            admin_id,
-            action,
-            target_id,
-            amount,
-            int(time.time())
-        )
-    )
-
-    conn.commit()
-
-
-def get_admin_logs(limit=50):
-
-    cursor.execute(
-        """
-        SELECT *
-
-        FROM admin_logs
-
-        ORDER BY id DESC
-
-        LIMIT ?
-        """,
-        (limit,)
-    )
-
-    return [dict(row) for row in cursor.fetchall()]
-
-
-# ==================================================
-# USER LIST
-# ==================================================
-
-def get_all_users():
-
-    cursor.execute(
-        """
-        SELECT *
-
-        FROM users
-
-        ORDER BY game_id
-        """
-    )
-
-    return [
-        row_to_user(row)
-        for row in cursor.fetchall()
-    ]
-
-
-def get_user_count():
-
-    cursor.execute(
-        """
-        SELECT COUNT(*)
-
-        FROM users
-        """
-    )
-
-    return cursor.fetchone()[0]
-
-
-# ==================================================
-# DELETE USER
-# ==================================================
-
-def delete_user(bale_id):
-
-    user = get_user_by_bale_id(bale_id)
-
-    if user is None:
-        return False
-
-    cursor.execute(
-        """
-        DELETE FROM users
-
-        WHERE bale_id = ?
-        """,
-        (bale_id,)
-    )
-
-    conn.commit()
-
-    return True
-
-
-# ==================================================
-# DATABASE INFO
-# ==================================================
-
-def database_info():
-
-    return {
-
-        "database": DATABASE_NAME,
-
-        "users": get_user_count()
-
-    }
-
-def __del__():
-
-    try:
-        conn.commit()
-        conn.close()
-
-    except:
-        pass
