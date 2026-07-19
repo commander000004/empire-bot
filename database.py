@@ -9,7 +9,8 @@ from config import (
     START_BANK
 )
 
-DATABASE_FILE = "users.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_FILE = os.path.join(BASE_DIR, "users.json")
 
 
 # -------------------------
