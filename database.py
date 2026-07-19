@@ -28,7 +28,22 @@ def load_users():
         encoding="utf-8"
     ) as file:
 
-        return json.load(file)
+        def load_users():
+
+    if not os.path.exists(DATABASE_FILE):
+        return []
+
+    try:
+        with open(
+            DATABASE_FILE,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            return json.load(file)
+
+    except:
+        return []
 
 
 def save_users(users):
