@@ -1,0 +1,134 @@
+[
+    {
+        "game_id": 1,
+        "bale_id": 1967315238,
+        "name": "c𝐎𝐌𝐌𝐀𝐍𝐃𝐄𝐑𝟎𝟒 | officially",
+        "coin": 104800,
+        "gem": 10,
+        "level": 1,
+        "xp": 0,
+        "job": null,
+        "bank": {
+            "balance": 993000,
+            "account": "6694881857",
+            "card": "0410720692698876",
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 0,
+        "crypto": {}
+    },
+    {
+        "game_id": 2,
+        "bale_id": 1381135035,
+        "name": "ayda",
+        "coin": 1115,
+        "gem": 10,
+        "level": 1,
+        "xp": 10,
+        "job": "کشاورز",
+        "bank": {
+            "balance": 0,
+            "account": null,
+            "card": null,
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 1784466775,
+        "crypto": {}
+    },
+    {
+        "game_id": 3,
+        "bale_id": 1267784829,
+        "name": "E30",
+        "coin": 1104,
+        "gem": 10,
+        "level": 1,
+        "xp": 5,
+        "job": "کشاورز",
+        "bank": {
+            "balance": 0,
+            "account": null,
+            "card": null,
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 1784466629,
+        "crypto": {}
+    },
+    {
+        "game_id": 4,
+        "bale_id": 1723374025,
+        "name": "𝖇𝖆𝖍𝖆𝖗 🎀ᩘຼꨶ᮫ِ.⌯",
+        "coin": 1000,
+        "gem": 10,
+        "level": 1,
+        "xp": 0,
+        "job": null,
+        "bank": {
+            "balance": 0,
+            "account": null,
+            "card": null,
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 0,
+        "crypto": {}
+    },
+    {
+        "game_id": 5,
+        "bale_id": 749823835,
+        "name": "𓁬𓄂𝕰𝐌𝐑 ๏ 𝐏𝐑𝐈𝐂𝐄𓆃𓅓",
+        "coin": 1000,
+        "gem": 10,
+        "level": 1,
+        "xp": 0,
+        "job": null,
+        "bank": {
+            "balance": 0,
+            "account": null,
+            "card": null,
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 0,
+        "crypto": {}
+    },
+    {
+        "game_id": 6,
+        "bale_id": 595450272,
+        "name": " 𝐀𝐇𝐙𝐀𝐑",
+        "coin": 3800,
+        "gem": 10,
+        "level": 1,
+        "xp": 0,
+        "job": null,
+        "bank": {
+            "balance": 2000,
+            "account": "4733788519",
+            "card": "0459593041199011",
+            "loan": 0,
+            "loan_time": 0
+        },
+        "inventory": [
+            "داس"
+        ],
+        "last_work": 0,
+        "crypto": {}
+    }
+]
