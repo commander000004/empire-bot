@@ -1,5 +1,5 @@
+import sqlite3
 import json
-import os
 
 from config import (
     START_COIN,
@@ -9,374 +9,108 @@ from config import (
     START_BANK
 )
 
-DATABASE_FILE = "users.json"
+DATABASE_FILE = "empire.db"
 
 
 # -------------------------
-# LOAD / SAVE
+# DATABASE
 # -------------------------
 
-def load_users():
+conn = sqlite3.connect(DATABASE_FILE)
+conn.row_factory = sqlite3.Row
 
-    if not os.path.exists(DATABASE_FILE):
-        return []
+cursor = conn.cursor()
 
-    with open(
-        DATABASE_FILE,
-        "r",
-        encoding="utf-8"
-    ) as file:
 
-        return json.load(file)
+def create_tables():
 
+    # Users
 
-def save_users(users):
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
 
-    with open(
-        DATABASE_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        json.dump(
-            users,
-            file,
-            indent=4,
-            ensure_ascii=False
-        )
+        game_id INTEGER UNIQUE,
 
+        bale_id INTEGER UNIQUE,
 
-# -------------------------
-# GAME ID
-# -------------------------
+        name TEXT,
 
-def get_next_game_id():
+        coin INTEGER,
 
-    users = load_users()
+        gem INTEGER,
 
-    if not users:
-        return 1
+        level INTEGER,
 
-    return max(
-        user["game_id"]
-        for user in users
-    ) + 1
+        xp INTEGER,
 
+        job TEXT,
 
-# -------------------------
-# FIND USERS
-# -------------------------
+        last_work INTEGER
 
-def get_user_by_bale_id(bale_id):
+    )
+    """)
 
-    users = load_users()
+    # Bank
 
-    for user in users:
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS bank (
 
-        if user["bale_id"] == bale_id:
-            return user
+        user_id INTEGER PRIMARY KEY,
 
-    return None
+        balance INTEGER,
 
+        account TEXT,
 
-def get_user_by_game_id(game_id):
+        card TEXT,
 
-    users = load_users()
+        loan INTEGER,
 
-    for user in users:
+        loan_time INTEGER,
 
-        if user["game_id"] == game_id:
-            return user
+        FOREIGN KEY(user_id) REFERENCES users(id)
 
-    return None
+    )
+    """)
 
+    # Inventory
 
-def get_user_by_card(card):
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS inventory (
 
-    users = load_users()
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    for user in users:
+        user_id INTEGER,
 
-        if user["bank"]["card"] == card:
-            return user
+        item TEXT,
 
-    return None
+        count INTEGER,
 
+        FOREIGN KEY(user_id) REFERENCES users(id)
 
-def get_user_by_account(account):
+    )
+    """)
 
-    users = load_users()
+    # Crypto
 
-    for user in users:
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS crypto (
 
-        if user["bank"]["account"] == account:
-            return user
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    return None
+        user_id INTEGER,
 
+        coin TEXT,
 
-# -------------------------
-# CREATE USER
-# -------------------------
+        amount REAL,
 
-def create_user(bale_id, name):
+        FOREIGN KEY(user_id) REFERENCES users(id)
 
-    users = load_users()
+    )
+    """)
 
-    user = {
+    conn.commit()
 
-        "game_id": get_next_game_id(),
 
-        "bale_id": bale_id,
-
-        "name": name,
-
-        # Economy
-
-        "coin": START_COIN,
-        "gem": START_GEM,
-
-        # Level
-
-        "level": START_LEVEL,
-        "xp": START_XP,
-
-        # Job
-
-        "job": None,
-
-        # Bank
-
-        "bank": {
-
-            "balance": START_BANK,
-
-            "account": None,
-
-            "card": None,
-
-            "loan": 0,
-
-            "loan_time": 0
-
-        },
-
-        # Items
-
-        "inventory": [
-            "داس"
-        ],
-
-        # Work
-
-        "last_work": 0,
-
-        # Crypto
-
-        "crypto": {}
-
-    }
-
-    users.append(user)
-
-    save_users(users)
-
-    return user
-    
-    # -------------------------
-# UPDATE USER
-# -------------------------
-
-def update_user(updated_user):
-
-    users = load_users()
-
-    for index, user in enumerate(users):
-
-        if user["bale_id"] == updated_user["bale_id"]:
-
-            users[index] = updated_user
-
-            break
-
-    save_users(users)
-
-
-# -------------------------
-# COIN SYSTEM
-# -------------------------
-
-def add_coin(user, amount):
-
-    user["coin"] += amount
-
-    update_user(user)
-
-
-def remove_coin(user, amount):
-
-    if amount <= 0:
-
-        return False
-
-    if user["coin"] < amount:
-
-        return False
-
-    user["coin"] -= amount
-
-    update_user(user)
-
-    return True
-
-
-# -------------------------
-# BANK SYSTEM
-# -------------------------
-
-def add_bank_money(user, amount):
-
-    if amount <= 0:
-
-        return False
-
-    user["bank"]["balance"] += amount
-
-    update_user(user)
-
-    return True
-
-
-def remove_bank_money(user, amount):
-
-    if amount <= 0:
-
-        return False
-
-    if user["bank"]["balance"] < amount:
-
-        return False
-
-    user["bank"]["balance"] -= amount
-
-    update_user(user)
-
-    return True
-
-
-def set_bank_account(user, account):
-
-    user["bank"]["account"] = account
-
-    update_user(user)
-
-
-def set_bank_card(user, card):
-
-    user["bank"]["card"] = card
-
-    update_user(user)
-    
-    # -------------------------
-# LOAN SYSTEM
-# -------------------------
-
-def set_loan(user, amount, loan_time):
-
-    user["bank"]["loan"] = amount
-    user["bank"]["loan_time"] = loan_time
-
-    update_user(user)
-
-
-def remove_loan(user):
-
-    user["bank"]["loan"] = 0
-    user["bank"]["loan_time"] = 0
-
-    update_user(user)
-
-
-# -------------------------
-# CHECK SYSTEM
-# -------------------------
-
-def card_exists(card):
-
-    return get_user_by_card(card) is not None
-
-
-def account_exists(account):
-
-    return get_user_by_account(account) is not None
-
-
-# -------------------------
-# ACCOUNT INFO
-# -------------------------
-
-def has_bank_account(user):
-
-    return user["bank"]["account"] is not None
-
-
-def has_bank_card(user):
-
-    return user["bank"]["card"] is not None
-
-
-def get_bank_balance(user):
-
-    return user["bank"]["balance"]
-    
-    # -------------------------
-# BANK TOOLS
-# -------------------------
-
-def deposit_coin(user, amount):
-
-    if amount <= 0:
-        return False
-
-    if user["coin"] < amount:
-        return False
-
-    user["coin"] -= amount
-    user["bank"]["balance"] += amount
-
-    update_user(user)
-
-    return True
-
-
-def withdraw_coin(user, amount):
-
-    if amount <= 0:
-        return False
-
-    if user["bank"]["balance"] < amount:
-        return False
-
-    user["bank"]["balance"] -= amount
-    user["coin"] += amount
-
-    update_user(user)
-
-    return True
-
-
-def transfer_bank_money(sender, receiver, amount):
-
-    if amount <= 0:
-        return False
-
-    if sender["bank"]["balance"] < amount:
-        return False
-
-    sender["bank"]["balance"] -= amount
-    receiver["bank"]["balance"] += amount
-
-    update_user(sender)
-    update_user(receiver)
-
-    return True
+create_tables()
