@@ -10,7 +10,15 @@ def get_connection():
     return psycopg.connect(
         DATABASE_URL
     )
-  if __name__ == "__main__":
+
+
+print(
+    "DATABASE URL:",
+    DATABASE_URL is not None
+)
+
+
+if __name__ == "__main__":
 
     conn = get_connection()
 
