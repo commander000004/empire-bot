@@ -237,7 +237,8 @@ async def handle_message(message, bot):
     if text in (
         "پروفایل",
         "پروفایل من",
-        "پروفایل💳"
+        "پروفایل💳",
+        "لول"
     ):
 
         await profile(message)
@@ -250,7 +251,8 @@ async def handle_message(message, bot):
     if text in (
         "راهنما",
         "help",
-        "/help"
+        "/help",
+        "کمک"
     ):
 
         await help_command(message)
