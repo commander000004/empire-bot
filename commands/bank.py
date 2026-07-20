@@ -1,4 +1,5 @@
 # commands/bank.py
+import time
 
 from database import (
     get_user,
@@ -22,10 +23,24 @@ async def bank(message):
 
         return
 
+    now = int(time.time())
+
+    if user["bank"] > 0 and now - user["last_interest"] >= 43200:
+
+        interest = int(user["bank"] * 0.05)
+
+        user["bank"] += interest
+
+        user["last_interest"] = now
+
+        update_user(user)
+
     card = user["card"] or "نداری"
 
     text = f"""
 🏦 بانک Empire
+📈 سود بانکی:
+5٪ هر 12 ساعت
 
 ━━━━━━━━━━━━━━
 
