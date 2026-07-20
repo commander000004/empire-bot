@@ -4,7 +4,7 @@
 # Empire Bot Config
 # ==========================
 
-TOKEN = "732199425:R5CCOtHefSM7X8IwMUxxz6VKKgV6RFiuLEI"
+TOKEN = "1136047890:wvjV_GX6CpHpX4D1kKwpKrVfdm7UTE545Qo"
 
 # Owner IDs
 # آیدی عددی خودت را اینجا قرار بده
