@@ -253,7 +253,7 @@ def create_user(
 
             )
 
-                db.commit()
+            db.commit()
 
 
 def update_user(user):
