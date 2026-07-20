@@ -254,7 +254,7 @@ def create_user(
 
                     False,
                     
-                    0,
+                    0
 
 
                 )
@@ -299,7 +299,7 @@ def update_user(user):
 
                     work_count=%s,
 
-                    banned=%s
+                    banned=%s,
                     
                     last_interest=%s
 
