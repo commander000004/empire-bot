@@ -1,3 +1,5 @@
+import random
+
 from commands.profile import profile
 from commands.jobs import jobs, choose_job
 from commands.work import work
@@ -46,6 +48,31 @@ async def handle_message(message, bot):
         return
 
     text = message.text.strip()
+    text_lower = text.lower()
+
+    artin_keywords = [
+        "ارتین",
+        "آرتین",
+        "artin",
+        "کامندر",
+        "کوماندر",
+        "commander",
+        "@commander"
+    ]
+
+    if any(word in text_lower for word in artin_keywords):
+
+        responses = [
+            "😎 بابامو (سازندمو) میگی؟ ❤️",
+            "👑 آرتین سازنده منه.",
+            "🤖 Commander؟ آره، همون سازندمه!",
+            "💜 سلام به سازندم آرتین!"
+        ]
+
+        await message.reply(random.choice(responses))
+        # اگه نمی‌خوای دستورات دیگه متوقف بشن، return نذار.
+        # اگه فقط همین جواب رو بده، return رو فعال کن.
+        # return
 
     # =====================
     # Ban Check
@@ -60,7 +87,7 @@ async def handle_message(message, bot):
         )
 
         return
-
+        
     # =====================
     # Save Group
     # =====================
