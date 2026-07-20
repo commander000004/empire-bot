@@ -1,35 +1,3 @@
-# config.py
+TOKEN = "1136047890:ul3I3TibqdXuI_SPWNNq0KQKMbJhYk1ZpTs"
 
-# ==========================
-# Empire Bot Config
-# ==========================
-
-TOKEN = "1136047890:wvjV_GX6CpHpX4D1kKwpKrVfdm7UTE545Qo"
-
-# Owner IDs
-# آیدی عددی خودت را اینجا قرار بده
-OWNERS = [
-    1967315238
-]
-
-# ==========================
-# Start Economy
-# ==========================
-
-START_COIN = 1000
-START_GEM = 5
-START_LEVEL = 1
-START_XP = 0
-START_BANK = 0
-
-# ==========================
-# Game
-# ==========================
-
-MAX_JOB_COOLDOWN = 1500
-
-# ==========================
-# Version
-# ==========================
-
-VERSION = "Empire V2"
+ADMIN_ID = 1967315238
