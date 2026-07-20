@@ -1,3 +1,11 @@
+# config.py
+
+
 TOKEN = "1136047890:ul3I3TibqdXuI_SPWNNq0KQKMbJhYk1ZpTs"
 
-ADMIN_ID = 1967315238
+
+OWNERS = [
+
+    1967315238
+
+]
