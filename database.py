@@ -109,24 +109,24 @@ def row_to_user(row):
         "xp": row[5],
 
         "last_work": row[6],
-        
-        "last_interest": row[7],
 
-        "bank": row[8],
+        "bank": row[7],
 
-        "card": row[9],
+        "card": row[8],
 
         "inventory": json.loads(
-            row[10]
+            row[9]
         ),
 
-        "job": row[11],
+        "job": row[10],
 
-        "work_count": row[12],
+        "work_count": row[11],
 
         "banned": bool(
-            row[13]
-        )
+            row[12]
+        ),
+        
+        "last_interest": row[13]
 
     }
 
@@ -209,13 +209,13 @@ def create_user(
                     level,
                     xp,
                     last_work,
-                    last_interest,
                     bank,
                     card,
                     inventory,
                     job,
                     work_count,
-                    banned
+                    banned,
+                    last_interest
 
                 )
 
@@ -244,8 +244,6 @@ def create_user(
 
                     0,
 
-                    0,
-
                     None,
 
                     json.dumps([]),
@@ -255,6 +253,8 @@ def create_user(
                     0,
 
                     False,
+                    
+                    0,
 
 
                 )
@@ -288,8 +288,6 @@ def update_user(user):
                     xp=%s,
 
                     last_work=%s,
-                    
-                    last_interest=%s,
 
                     bank=%s,
 
@@ -302,6 +300,8 @@ def update_user(user):
                     work_count=%s,
 
                     banned=%s
+                    
+                    last_interest=%s
 
                 WHERE bale_id=%s
                 """,
@@ -319,8 +319,6 @@ def update_user(user):
                     user["xp"],
 
                     user["last_work"],
-                    
-                    user["last_interest"],
 
                     user["bank"],
 
@@ -336,6 +334,8 @@ def update_user(user):
                     user["work_count"],
 
                     bool(user["banned"]),
+                    
+                    user["last_interest"],
 
                     user["bale_id"]
 
