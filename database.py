@@ -54,6 +54,8 @@ def init_db():
                     xp INTEGER NOT NULL,
 
                     last_work BIGINT NOT NULL,
+                    
+                    last_interest BIGINT NOT NULL,
 
                     bank INTEGER NOT NULL,
 
@@ -107,21 +109,23 @@ def row_to_user(row):
         "xp": row[5],
 
         "last_work": row[6],
+        
+        "last_interest": row[7],
 
-        "bank": row[7],
+        "bank": row[8],
 
-        "card": row[8],
+        "card": row[9],
 
         "inventory": json.loads(
-            row[9]
+            row[10]
         ),
 
-        "job": row[10],
+        "job": row[11],
 
-        "work_count": row[11],
+        "work_count": row[12],
 
         "banned": bool(
-            row[12]
+            row[13]
         )
 
     }
@@ -205,6 +209,7 @@ def create_user(
                     level,
                     xp,
                     last_work,
+                    last_interest,
                     bank,
                     card,
                     inventory,
@@ -216,7 +221,7 @@ def create_user(
 
                 VALUES(
 
-                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
 
                 )
                 """,
@@ -239,6 +244,8 @@ def create_user(
 
                     0,
 
+                    0,
+
                     None,
 
                     json.dumps([]),
@@ -247,7 +254,8 @@ def create_user(
 
                     0,
 
-                    False
+                    False,
+
 
                 )
 
@@ -280,6 +288,8 @@ def update_user(user):
                     xp=%s,
 
                     last_work=%s,
+                    
+                    last_interest=%s,
 
                     bank=%s,
 
@@ -309,6 +319,8 @@ def update_user(user):
                     user["xp"],
 
                     user["last_work"],
+                    
+                    user["last_interest"],
 
                     user["bank"],
 
