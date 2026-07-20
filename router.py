@@ -1,6 +1,3 @@
-# router.py
-
-
 from commands.profile import profile
 from commands.jobs import jobs, choose_job
 from commands.work import work
@@ -45,17 +42,16 @@ from database import (
 
 async def handle_message(message, bot):
 
-    text = (message.text or "").strip()
-    
-    
-        # =====================
+    if not getattr(message, "text", None):
+        return
+
+    text = message.text.strip()
+
+    # =====================
     # Ban Check
     # =====================
 
-    user = get_user(
-        str(message.author.id)
-    )
-
+    user = get_user(str(message.author.id))
 
     if user and user["banned"]:
 
@@ -64,9 +60,11 @@ async def handle_message(message, bot):
         )
 
         return
-        
 
-    # ذخیره گروه
+    # =====================
+    # Save Group
+    # =====================
+
     if message.chat.type != "private":
 
         try:
@@ -80,58 +78,38 @@ async def handle_message(message, bot):
                 )
             )
 
-        except:
+        except Exception:
             pass
 
-    # فقط گروه
+    # =====================
+    # Private Block
+    # =====================
+
     if message.chat.type == "private":
 
         await message.reply(
-
             "🤖 ربات فقط داخل گروه‌ها فعال است.\n\n"
             "➕ لطفاً ربات را به گروه خود اضافه کنید."
-
         )
 
         return
 
     # =====================
-    # پنل ادمین
+    # Admin Panel
     # =====================
 
     if text == "پنل":
 
         await admin_panel(message)
         return
-
-    
-
-        await stats(message)
-        return
-        
-        
-        
-        
-                # =====================
-    # پنل ادمین
-    # =====================
-
-    if text == "پنل":
-
-        await admin_panel(message)
-
-        return
-
 
     if text == "آمار":
 
         await stats(message)
-
         return
 
-
     # =====================
-    # Ban System
+    # Ban
     # =====================
 
     if text.startswith("بن "):
@@ -153,7 +131,6 @@ async def handle_message(message, bot):
 
         return
 
-
     if text.startswith("آنبن "):
 
         try:
@@ -172,16 +149,12 @@ async def handle_message(message, bot):
             )
 
         return
-        
-            # =====================
+
+    # =====================
     # Broadcast
     # =====================
 
     if text.startswith("همگانی "):
-
-        await message.reply(
-            "✅ دستور همگانی شناسایی شد"
-        )
 
         msg = text.replace(
             "همگانی ",
@@ -196,18 +169,8 @@ async def handle_message(message, bot):
         )
 
         return
-        
-         
-           
-    # =====================
-    # پروفایل
-    # =====================
-    
-    
-    
-    
             # =====================
-    # تنظیم بازیکن (Owner)
+    # تنظیم بازیکن
     # =====================
 
     if text.startswith("تنظیم "):
@@ -217,11 +180,8 @@ async def handle_message(message, bot):
             data = text.split()
 
             mode = data[1]
-
             user_id = data[2]
-
             amount = int(data[3])
-
 
             await set_player(
                 message,
@@ -230,20 +190,16 @@ async def handle_message(message, bot):
                 amount
             )
 
-
         except:
 
             await message.reply(
-
                 "❌ فرمت اشتباه.\n\n"
                 "مثال:\n"
                 "تنظیم کوین 123456 50000\n"
                 "تنظیم جم 123456 100\n"
                 "تنظیم xp 123456 5000\n"
                 "تنظیم لول 123456 20"
-
             )
-
 
         return
 
@@ -251,13 +207,11 @@ async def handle_message(message, bot):
     # پروفایل
     # =====================
 
-    if text in [
-
+    if text in (
         "پروفایل",
         "پروفایل من",
         "پروفایل💳"
-
-    ]:
+    ):
 
         await profile(message)
         return
@@ -266,13 +220,11 @@ async def handle_message(message, bot):
     # راهنما
     # =====================
 
-    if text in [
-
+    if text in (
         "راهنما",
         "help",
         "/help"
-
-    ]:
+    ):
 
         await help_command(message)
         return
@@ -281,13 +233,11 @@ async def handle_message(message, bot):
     # شغل
     # =====================
 
-    if text in [
-
+    if text in (
         "شغل",
         "شغل ها",
         "شغل‌ها"
-
-    ]:
+    ):
 
         await jobs(message)
         return
@@ -331,7 +281,9 @@ async def handle_message(message, bot):
 
         await make_card(message)
 
-        return    # =====================
+        return
+
+    # =====================
     # واریز
     # =====================
 
@@ -355,8 +307,7 @@ async def handle_message(message, bot):
             )
 
         return
-
-    # =====================
+            # =====================
     # برداشت
     # =====================
 
@@ -413,13 +364,11 @@ async def handle_message(message, bot):
     # فروشگاه
     # =====================
 
-    if text in [
-
+    if text in (
         "فروشگاه",
         "شاپ",
         "shop"
-
-    ]:
+    ):
 
         await shop(message)
 
@@ -448,51 +397,51 @@ async def handle_message(message, bot):
     # کیف
     # =====================
 
-    if text in [
-
+    if text in (
         "کیف",
         "کوله",
         "inventory",
         "Inventory"
-
-    ]:
+    ):
 
         await inventory(message)
 
         return
-
-    # =====================
+            # =====================
     # لیدربورد
     # =====================
 
     if text == "لیدربورد":
 
         await leaderboard(message)
+
         return
 
 
     if text == "لیدربورد لول":
 
         await leaderboard_level(message)
+
         return
 
 
     if text == "لیدربورد XP":
 
         await leaderboard_xp(message)
+
         return
 
 
     if text == "لیدربورد جم":
 
         await leaderboard_gem(message)
+
         return
 
     # =====================
-    # دستور ناشناخته
+    # Unknown Command
     # =====================
 
-    # فعلاً هیچ پاسخی نمی‌دهد
     return
         
         
