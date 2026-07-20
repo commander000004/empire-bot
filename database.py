@@ -253,8 +253,10 @@ def create_user(
 
             )
 
-        db.commit()
-        def update_user(user):
+                db.commit()
+
+
+def update_user(user):
 
     with connect() as db:
 
