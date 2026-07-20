@@ -25,7 +25,7 @@ async def bank(message):
 
     now = int(time.time())
 
-    if user["bank"] > 0 and now - user["last_interest"] >= 4200:
+    if user["bank"] > 0 and now - user["last_interest"] >= 43200:
 
         interest = int(user["bank"] * 0.05)
 
