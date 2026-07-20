@@ -14,14 +14,8 @@ from database import (
 )
 
 
-# ==========================
-# Check Owner
-# ==========================
-
 def is_owner(user_id):
-
     return int(user_id) in OWNERS
-
 
 
 # ==========================
@@ -31,9 +25,7 @@ def is_owner(user_id):
 async def admin_panel(message):
 
     if not is_owner(message.author.id):
-
         return
-
 
     text = """
 👑 پنل مدیریت Empire
@@ -46,44 +38,28 @@ async def admin_panel(message):
 
 ━━━━━━━━━━━━━━
 
-⚙️ تنظیم بازیکن:
+⚙️ تنظیم بازیکن
 
 تنظیم کوین ID مقدار
-
 تنظیم جم ID مقدار
-
 تنظیم xp ID مقدار
-
 تنظیم لول ID مقدار
-
-
-مثال:
-
-تنظیم کوین 123456 50000
-
 
 ━━━━━━━━━━━━━━
 
-🚧 امکانات آینده:
+🚫 بن ID
+✅ آنبن ID
 
-📢 پیام همگانی
+━━━━━━━━━━━━━━
 
-🚫 بن بازیکن
-
-✅ آنبن
-
-📝 لاگ‌ها
-
+📢 همگانی متن پیام
 
 ━━━━━━━━━━━━━━
 
 Empire V3
-v3 powered by @commander04
 """
 
-
     await message.reply(text)
-
 
 
 # ==========================
@@ -93,25 +69,13 @@ v3 powered by @commander04
 async def stats(message):
 
     if not is_owner(message.author.id):
-
         return
-
 
     users = get_all_users()
 
-
-    total_coin = 0
-    total_bank = 0
-    total_gem = 0
-
-
-    for user in users:
-
-        total_coin += user["coin"]
-        total_bank += user["bank"]
-        total_gem += user["gem"]
-
-
+    total_coin = sum(u["coin"] for u in users)
+    total_bank = sum(u["bank"] for u in users)
+    total_gem = sum(u["gem"] for u in users)
 
     text = f"""
 📊 آمار Empire
@@ -127,36 +91,23 @@ async def stats(message):
 🚫 بن شده:
 {total_banned()}
 
-
 ━━━━━━━━━━━━━━
 
-💰 Coin کل:
+💰 Coin:
 {total_coin:,}
 
-🏦 بانک کل:
+🏦 Bank:
 {total_bank:,}
 
-💎 Gem کل:
+💎 Gem:
 {total_gem:,}
-
-
-━━━━━━━━━━━━━━
-
-👑 Owner Panel
 """
-
-
-    print(
-        f"[ADMIN] {message.author.id} opened stats"
-    )
-
 
     await message.reply(text)
 
 
-
 # ==========================
-# Set Player Value
+# Set Player
 # ==========================
 
 async def set_player(
@@ -167,119 +118,58 @@ async def set_player(
 ):
 
     if not is_owner(message.author.id):
-
         return
 
-
-
     fields = {
-
         "کوین": "coin",
-
         "جم": "gem",
-
         "xp": "xp",
-
         "لول": "level"
-
     }
-
-
 
     if mode not in fields:
 
-
-        await message.reply(
-            "❌ نوع تنظیم اشتباه است."
-        )
-
+        await message.reply("❌ نوع تنظیم اشتباه است.")
         return
 
-
-
-    user = get_user(
-        str(user_id)
-    )
-
+    user = get_user(str(user_id))
 
     if not user:
 
-
-        await message.reply(
-            "❌ بازیکن پیدا نشد."
-        )
-
+        await message.reply("❌ بازیکن پیدا نشد.")
         return
 
-
-
-    result = set_user_value(
-
+    ok = set_user_value(
         user_id,
-
         fields[mode],
-
         amount
-
     )
 
-
-
-    if result:
-
+    if ok:
 
         await message.reply(
-
-            f"✅ تغییر انجام شد\n\n"
-
-            f"👤 بازیکن: {user_id}\n"
-
-            f"⚙️ بخش: {mode}\n"
-
-            f"🔢 مقدار جدید: {amount}"
-
+            f"✅ انجام شد.\n\n"
+            f"{mode}: {amount}"
         )
-
-
-        print(
-
-            f"[ADMIN LOG] "
-            f"{message.author.id} "
-            f"SET {mode} "
-            f"{user_id} = {amount}"
-
-        )
-
-
 
     else:
 
+        await message.reply("❌ خطا.")
 
-        await message.reply(
-            "❌ خطا در تغییر اطلاعات."
-        )
-        # ==========================
-# Ban / Unban
+
 # ==========================
-
+# Ban
+# ==========================
 
 async def ban_user(message, user_id):
 
     if not is_owner(message.author.id):
-
         return
 
-
-    result = set_ban(
-        user_id,
-        1
-    )
-
-
-    if result:
+    if set_ban(user_id, True):
 
         await message.reply(
-            f"🚫 کاربر {user_id} بن شد."
+            f"🚫 {user_id} بن شد."
         )
 
     else:
@@ -287,54 +177,37 @@ async def ban_user(message, user_id):
         await message.reply(
             "❌ کاربر پیدا نشد."
         )
-
-
 
 
 async def unban_user(message, user_id):
 
     if not is_owner(message.author.id):
-
         return
 
-
-    result = set_ban(
-        user_id,
-        0
-    )
-
-
-    if result:
+    if set_ban(user_id, False):
 
         await message.reply(
-            f"✅ کاربر {user_id} آنبن شد."
+            f"✅ {user_id} آنبن شد."
         )
 
     else:
 
         await message.reply(
             "❌ کاربر پیدا نشد."
-        )
-        
+    )
         # ==========================
-# Broadcast To Groups
+# Broadcast
 # ==========================
 
 async def broadcast(message, bot, text):
 
     if not is_owner(message.author.id):
-
         return
-        
-        print("Broadcast function reached")
-
 
     groups = get_all_groups()
 
-
     success = 0
     failed = 0
-
 
     for group in groups:
 
@@ -347,7 +220,6 @@ async def broadcast(message, bot, text):
 
             success += 1
 
-
         except Exception as e:
 
             print(
@@ -357,17 +229,14 @@ async def broadcast(message, bot, text):
 
             failed += 1
 
-
-
     await message.reply(
 
-        f"📢 پیام همگانی ارسال شد\n\n"
-        f"✅ موفق: {success} گروه\n"
-        f"❌ ناموفق: {failed} گروه"
+        f"📢 پیام همگانی ارسال شد.\n\n"
+        f"✅ موفق: {success}\n"
+        f"❌ ناموفق: {failed}"
 
     )
-
 
     print(
-        f"[ADMIN LOG] Broadcast by {message.author.id}"
-    )
+        f"[ADMIN] Broadcast by {message.author.id}"
+                   )
