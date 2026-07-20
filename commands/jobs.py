@@ -13,9 +13,9 @@ JOBS = {
         "level": 1,
         "item": "داس",
         "reward_min": 100,
-        "reward_max": 200,
-        "xp_min": 15,
-        "xp_max": 25,
+        "reward_max": 150,
+        "xp_min": 5,
+        "xp_max": 13,
         "cooldown": 180,
         "food": 2
     },
@@ -24,10 +24,10 @@ JOBS = {
     "معدنچی": {
         "level": 2,
         "item": "کلنگ",
-        "reward_min": 250,
-        "reward_max": 400,
-        "xp_min": 25,
-        "xp_max": 40,
+        "reward_min": 150,
+        "reward_max": 300,
+        "xp_min": 13,
+        "xp_max": 30,
         "cooldown": 300,
         "food": 2
     },
@@ -36,8 +36,8 @@ JOBS = {
     "فروشنده": {
         "level": 3,
         "item": None,
-        "reward_min": 400,
-        "reward_max": 600,
+        "reward_min": 300,
+        "reward_max": 550,
         "xp_min": 35,
         "xp_max": 50,
         "cooldown": 420,
@@ -48,10 +48,10 @@ JOBS = {
     "ماهیگیر": {
         "level": 5,
         "item": "چوب ماهیگیری",
-        "reward_min": 700,
-        "reward_max": 900,
-        "xp_min": 50,
-        "xp_max": 70,
+        "reward_min": 600,
+        "reward_max": 800,
+        "xp_min": 40,
+        "xp_max": 60,
         "cooldown": 600,
         "food": 3
     },
@@ -72,10 +72,10 @@ JOBS = {
     "برنامه‌نویس": {
         "level": 10,
         "item": "لپتاپ",
-        "reward_min": 2000,
+        "reward_min": 1000,
         "reward_max": 3000,
-        "xp_min": 100,
-        "xp_max": 150,
+        "xp_min": 90,
+        "xp_max": 130,
         "cooldown": 1000,
         "food": 4
     },
@@ -88,7 +88,7 @@ JOBS = {
         "reward_max": 6000,
         "xp_min": 150,
         "xp_max": 220,
-        "cooldown": 1200,
+        "cooldown": 1100,
         "food": 5
     }
 
