@@ -1,88 +1,109 @@
-# database.py
-
-import sqlite3
-import random
+import os
 import json
+import random
+from contextlib import contextmanager
 
-DB = "empire.db"
+import psycopg
 
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL environment variable not found."
+    )
+
+
+@contextmanager
 def connect():
-    return sqlite3.connect(DB)
+
+    conn = psycopg.connect(
+        DATABASE_URL
+    )
+
+    try:
+
+        yield conn
+
+    finally:
+
+        conn.close()
 
 
 def init_db():
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    # ===== Users =====
+        with db.cursor() as cur:
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users(
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS users(
 
-        bale_id TEXT PRIMARY KEY,
+                    bale_id TEXT PRIMARY KEY,
 
-        name TEXT,
+                    name TEXT NOT NULL,
 
-        coin INTEGER,
+                    coin INTEGER NOT NULL,
 
-        gem INTEGER,
+                    gem INTEGER NOT NULL,
 
-        level INTEGER,
+                    level INTEGER NOT NULL,
 
-        xp INTEGER,
+                    xp INTEGER NOT NULL,
 
-        last_work INTEGER,
+                    last_work BIGINT NOT NULL,
 
-        bank INTEGER,
+                    bank INTEGER NOT NULL,
 
-        card TEXT,
+                    card TEXT,
 
-        inventory TEXT,
+                    inventory TEXT NOT NULL,
 
-        job TEXT,
+                    job TEXT,
 
-        work_count INTEGER,
+                    work_count INTEGER NOT NULL,
 
-        banned INTEGER DEFAULT 0
+                    banned BOOLEAN NOT NULL DEFAULT FALSE
 
-    )
-    """)
+                )
+                """
+            )
 
-    # ===== Groups =====
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS groups(
 
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS groups(
+                    chat_id TEXT PRIMARY KEY,
 
-        chat_id TEXT PRIMARY KEY,
+                    title TEXT NOT NULL
 
-        title TEXT
+                )
+                """
+            )
 
-    )
-    """)
-
-    db.commit()
-    db.close()
-
-
-# ================= USERS =================
+        db.commit()
 
 
 def row_to_user(row):
 
-    if not row:
+    if row is None:
+
         return None
 
     return {
 
         "bale_id": row[0],
+
         "name": row[1],
 
         "coin": row[2],
+
         "gem": row[3],
 
         "level": row[4],
+
         "xp": row[5],
 
         "last_work": row[6],
@@ -91,50 +112,75 @@ def row_to_user(row):
 
         "card": row[8],
 
-        "inventory": json.loads(row[9]),
+        "inventory": json.loads(
+            row[9]
+        ),
 
         "job": row[10],
 
         "work_count": row[11],
 
-        "banned": bool(row[12])
+        "banned": bool(
+            row[12]
+        )
 
     }
 
 
-def get_user(bale_id):
+def get_user(
+    bale_id
+):
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    cur.execute(
-        "SELECT * FROM users WHERE bale_id=?",
-        (bale_id,)
+        with db.cursor() as cur:
+
+            cur.execute(
+
+                """
+                SELECT *
+                FROM users
+                WHERE bale_id=%s
+                """,
+
+                (
+                    str(bale_id),
+                )
+
+            )
+
+            row = cur.fetchone()
+
+    return row_to_user(
+        row
     )
-
-    row = cur.fetchone()
-
-    db.close()
-
-    return row_to_user(row)
 
 
 def get_all_users():
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    cur.execute(
-        "SELECT * FROM users"
-    )
+        with db.cursor() as cur:
 
-    rows = cur.fetchall()
+            cur.execute(
 
-    db.close()
+                """
+                SELECT *
+                FROM users
+                ORDER BY level DESC,
+                         xp DESC
+                """
+
+            )
+
+            rows = cur.fetchall()
 
     return [
+
         row_to_user(row)
+
         for row in rows
+
     ]
 
 
@@ -143,154 +189,193 @@ def create_user(
     name
 ):
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    cur.execute(
-        """
-        INSERT INTO users
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """,
-        (
-            bale_id,
-            name,
+        with db.cursor() as cur:
 
-            1000,
-            5,
+            cur.execute(
 
-            1,
-            0,
+                """
+                INSERT INTO users(
 
-            0,
+                    bale_id,
+                    name,
+                    coin,
+                    gem,
+                    level,
+                    xp,
+                    last_work,
+                    bank,
+                    card,
+                    inventory,
+                    job,
+                    work_count,
+                    banned
 
-            0,
+                )
 
-            None,
+                VALUES(
 
-            json.dumps([]),
+                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
 
-            None,
+                )
+                """,
 
-            0,
+                (
 
-            0
-        )
-    )
+                    str(bale_id),
 
-    db.commit()
-    db.close()
+                    name,
+
+                    1000,
+
+                    5,
+
+                    1,
+
+                    0,
+
+                    0,
+
+                    0,
+
+                    None,
+
+                    json.dumps([]),
+
+                    None,
+
+                    0,
+
+                    False
+
+                )
+
+            )
+
+        db.commit()
+        def update_user(user):
+
+    with connect() as db:
+
+        with db.cursor() as cur:
+
+            cur.execute(
+
+                """
+                UPDATE users
+
+                SET
+
+                    name=%s,
+
+                    coin=%s,
+
+                    gem=%s,
+
+                    level=%s,
+
+                    xp=%s,
+
+                    last_work=%s,
+
+                    bank=%s,
+
+                    card=%s,
+
+                    inventory=%s,
+
+                    job=%s,
+
+                    work_count=%s,
+
+                    banned=%s
+
+                WHERE bale_id=%s
+                """,
+
+                (
+
+                    user["name"],
+
+                    user["coin"],
+
+                    user["gem"],
+
+                    user["level"],
+
+                    user["xp"],
+
+                    user["last_work"],
+
+                    user["bank"],
+
+                    user["card"],
+
+                    json.dumps(
+                        user["inventory"],
+                        ensure_ascii=False
+                    ),
+
+                    user["job"],
+
+                    user["work_count"],
+
+                    bool(user["banned"]),
+
+                    user["bale_id"]
+
+                )
+
+            )
+
+        db.commit()
 
 
-def update_user(user):
+def add_group(chat_id, title):
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    cur.execute(
-        """
-        UPDATE users SET
+        with db.cursor() as cur:
 
-        name=?,
-        coin=?,
-        gem=?,
-        level=?,
-        xp=?,
-        last_work=?,
-        bank=?,
-        card=?,
-        inventory=?,
-        job=?,
-        work_count=?,
-        banned=?
+            cur.execute(
 
-        WHERE bale_id=?
+                """
+                INSERT INTO groups(chat_id, title)
 
-        """,
-        (
+                VALUES(%s, %s)
 
-            user["name"],
+                ON CONFLICT(chat_id)
 
-            user["coin"],
+                DO NOTHING
+                """,
 
-            user["gem"],
+                (
 
-            user["level"],
+                    str(chat_id),
 
-            user["xp"],
+                    title
 
-            user["last_work"],
+                )
 
-            user["bank"],
+            )
 
-            user["card"],
-
-            json.dumps(
-                user["inventory"],
-                ensure_ascii=False
-            ),
-
-            user["job"],
-
-            user["work_count"],
-
-            int(user["banned"]),
-
-            user["bale_id"]
-
-        )
-    )
-
-    db.commit()
-    db.close()
-
-
-# ================= GROUPS =================
-
-
-def add_group(
-    chat_id,
-    title
-):
-
-    db = connect()
-    cur = db.cursor()
-
-    cur.execute(
-
-        """
-        INSERT OR IGNORE
-        INTO groups
-        VALUES(?,?)
-        """,
-
-        (
-            str(chat_id),
-            title
-        )
-
-    )
-
-    db.commit()
-    db.close()
+        db.commit()
 
 
 def get_all_groups():
 
-    db = connect()
-    cur = db.cursor()
+    with connect() as db:
 
-    cur.execute(
-        "SELECT * FROM groups"
-    )
+        with db.cursor() as cur:
 
-    groups = cur.fetchall()
+            cur.execute(
 
-    db.close()
+                "SELECT chat_id, title FROM groups"
 
-    return groups
+            )
 
-
-# ================= STATS =================
+            return cur.fetchall()
 
 
 def total_players():
@@ -313,18 +398,15 @@ def total_banned():
 
         [
 
-            u
+            user
 
-            for u in get_all_users()
+            for user in get_all_users()
 
-            if u["banned"]
+            if user["banned"]
 
         ]
 
     )
-
-
-# ================= CARD =================
 
 
 def create_card():
@@ -334,96 +416,188 @@ def create_card():
         random.randint(
 
             100000,
+
             999999
 
         )
 
     )
-    
-    # ================= ADMIN TOOLS =================
 
 
 def set_user_value(
+
     bale_id,
+
     field,
+
     value
+
 ):
 
     allowed = [
-        "coin",
-        "gem",
-        "xp",
-        "level"
-    ]
 
+        "coin",
+
+        "gem",
+
+        "xp",
+
+        "level"
+
+    ]
 
     if field not in allowed:
 
         return False
 
+    with connect() as db:
 
-    db = connect()
+        with db.cursor() as cur:
 
-    cur = db.cursor()
+            cur.execute(
 
+                f"""
 
-    cur.execute(
+                UPDATE users
 
-        f"""
-        UPDATE users
-        SET {field}=?
-        WHERE bale_id=?
-        """,
+                SET {field}=%s
 
-        (
-            value,
-            str(bale_id)
-        )
+                WHERE bale_id=%s
 
-    )
+                """,
 
+                (
 
-    changed = cur.rowcount
+                    value,
 
+                    str(bale_id)
 
-    db.commit()
+                )
 
-    db.close()
+            )
 
+            changed = cur.rowcount
+
+        db.commit()
 
     return changed > 0
-    # ================= BAN SYSTEM =================
 
 
 def set_ban(
+
     bale_id,
+
     status
+
 ):
 
-    db = connect()
+    with connect() as db:
 
-    cur = db.cursor()
+        with db.cursor() as cur:
+
+            cur.execute(
+
+                """
+
+                UPDATE users
+
+                SET banned=%s
+
+                WHERE bale_id=%s
+
+                """,
+
+                (
+
+                    bool(status),
+
+                    str(bale_id)
+
+                )
+
+            )
+
+            changed = cur.rowcount
+
+        db.commit()
+
+    return changed > 0
 
 
-    cur.execute(
-        """
-        UPDATE users
-        SET banned=?
-        WHERE bale_id=?
-        """,
-        (
-            int(status),
-            str(bale_id)
-        )
+def user_exists(
+
+    bale_id
+
+):
+
+    return get_user(
+        bale_id
+    ) is not None
+
+
+def delete_user(
+
+    bale_id
+
+):
+
+    with connect() as db:
+
+        with db.cursor() as cur:
+
+            cur.execute(
+
+                """
+
+                DELETE FROM users
+
+                WHERE bale_id=%s
+
+                """,
+
+                (
+
+                    str(bale_id),
+
+                )
+
+            )
+
+        db.commit()
+
+
+def get_user_by_bale_id(
+
+    bale_id
+
+):
+
+    return get_user(
+        bale_id
     )
 
 
-    changed = cur.rowcount
+def create_or_get_user(
 
+    bale_id,
 
-    db.commit()
+    name
 
-    db.close()
+):
 
+    user = get_user(
+        bale_id
+    )
 
-    return changed > 0
+    if user:
+
+        return user
+
+    create_user(
+        bale_id,
+        name
+    )
+
+    return get_user(
+        bale_id
+            )
