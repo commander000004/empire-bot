@@ -7,6 +7,17 @@ from router import handle_message
 # اول دیتابیس ساخته بشه
 init_db()
 
+from database_pg import get_connection
+
+try:
+    conn = get_connection()
+    print("✅ PostgreSQL Connected")
+    conn.close()
+
+except Exception as e:
+    print("❌ PostgreSQL Error:", e)
+    
+
 bot = Bot(token=TOKEN)
 
 
