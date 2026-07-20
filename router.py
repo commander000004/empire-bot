@@ -45,7 +45,7 @@ from database import (
 
 async def handle_message(message, bot):
 
-    text = message.text.strip()
+    text = (message.text or "").strip()
     
     
         # =====================
