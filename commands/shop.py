@@ -90,66 +90,57 @@ async def buy(message, item):
 
     price = SHOP[item]["price"]
 
-currency = SHOP[item].get(
-    "currency",
-    "coin"
-)
+    currency = SHOP[item].get(
+        "currency",
+        "coin"
+    )
 
+    if currency == "gem":
 
-if currency == "gem":
+        if user["gem"] < price:
 
-    if user["gem"] < price:
+            await message.reply(
+                "❌ Gem کافی نداری."
+            )
 
-        await message.reply(
-            "❌ Gem کافی نداری."
-        )
+            return
 
-        return
+        user["gem"] -= price
 
-    user["gem"] -= price
+    else:
 
+        if user["coin"] < price:
 
-else:
+            await message.reply(
+                "❌ Coin کافی نداری."
+            )
 
-    if user["coin"] < price:
+            return
 
-        await message.reply(
-            "❌ Coin کافی نداری."
-        )
+        user["coin"] -= price
 
-        return
+    # فعال کردن بوسترها
+    if item == "⏳ Time Booster":
 
-    user["coin"] -= price
+        user["time_booster_until"] = int(time.time()) + (12 * 60 * 60)
 
+    elif item == "💰 Double Rewards":
 
+        user["double_rewards_until"] = int(time.time()) + (12 * 60 * 60)
 
-# فعال کردن بوسترها
+    else:
 
-if item == "⏳ Time Booster":
-
-    user["time_booster_until"] = int(time.time()) + (12 * 60 * 60)
-
-
-elif item == "💰 Double Rewards":
-
-    user["double_rewards_until"] = int(time.time()) + (12 * 60 * 60)
-
-
-else:
-
-    user["inventory"].append(item)
+        user["inventory"].append(item)
 
     update_user(user)
 
     await message.reply(
 
         f"✅ خرید انجام شد.\n\n"
-
         f"📦 {item}\n"
-
         f"{'💎' if currency == 'gem' else '💰'} {price} {'Gem' if currency == 'gem' else 'Coin'}"
 
-    )
+        )
 
 
 async def inventory(message):
