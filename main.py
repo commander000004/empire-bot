@@ -1,7 +1,3 @@
-import os
-
-print(os.listdir("commands"))
-
 from bale import Bot
 
 from config import TOKEN
