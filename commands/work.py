@@ -75,6 +75,7 @@ TEXTS = {
 }
 
 
+
 async def work(message):
 
     user = get_user(
@@ -91,6 +92,7 @@ async def work(message):
         return
 
 
+
     if not user["job"]:
 
         await message.reply(
@@ -98,6 +100,7 @@ async def work(message):
         )
 
         return
+
 
 
     job_name = user["job"]
@@ -111,9 +114,11 @@ async def work(message):
     cooldown = job["cooldown"]
 
 
+
     if user["time_booster_until"] > now:
 
         cooldown = cooldown // 2
+
 
 
     remain = cooldown - (
@@ -134,12 +139,15 @@ async def work(message):
         return
 
 
+
     user["last_work"] = now
 
     user["work_count"] += 1
 
 
+
     food_used = 0
+
 
 
     if user["work_count"] >= job["food"]:
@@ -147,13 +155,17 @@ async def work(message):
 
         if "غذا" in user["inventory"]:
 
+
             user["inventory"].remove(
                 "غذا"
             )
 
+
             user["work_count"] = 0
 
+
             food_used = 1
+
 
 
             update_mission(
@@ -162,14 +174,19 @@ async def work(message):
             )
 
 
+
         elif user["gem"] > 0:
 
+
             user["gem"] -= 1
+
 
             user["work_count"] = 0
 
 
+
         else:
+
 
             user["xp"] = max(
                 0,
@@ -183,9 +200,9 @@ async def work(message):
                 "✨ 10 XP از شما کم شد."
             )
 
-            return    
-            
-        coin = random.randint(
+
+            return
+                coin = random.randint(
         job["reward_min"],
         job["reward_max"]
     )
@@ -195,6 +212,7 @@ async def work(message):
         job["xp_min"],
         job["xp_max"]
     )
+
 
 
     if user["double_rewards_until"] > now:
@@ -235,6 +253,7 @@ async def work(message):
     got_gem = False
 
 
+
     if random.random() <= GEM_CHANCE:
 
         user["gem"] += 1
@@ -248,6 +267,7 @@ async def work(message):
     )
 
 
+
     update_user(
         user
     )
@@ -257,6 +277,7 @@ async def work(message):
     text = ""
 
 
+
     for line in TEXTS[job_name]:
 
         text += line + "\n"
@@ -264,6 +285,7 @@ async def work(message):
 
 
     text += "\n"
+
 
     text += (
         f"🍞 غذا مصرف شده: {food_used}\n\n"
@@ -292,15 +314,19 @@ async def work(message):
 
     if user["time_booster_until"] > now:
 
+
         remain_time = (
             user["time_booster_until"] - now
         )
 
+
         hours = remain_time // 3600
+
 
         minutes = (
             remain_time % 3600
         ) // 60
+
 
 
         text += (
@@ -312,15 +338,19 @@ async def work(message):
 
     if user["double_rewards_until"] > now:
 
+
         remain_time = (
             user["double_rewards_until"] - now
         )
 
+
         hours = remain_time // 3600
+
 
         minutes = (
             remain_time % 3600
         ) // 60
+
 
 
         text += (
@@ -341,6 +371,7 @@ async def work(message):
     )
 
 
+
     text += (
         f"⭐ Level: "
         f"{user['level']}"
@@ -349,6 +380,7 @@ async def work(message):
 
 
     if level_up:
+
 
         text += (
             "\n\n🎉 LEVEL UP!\n"
@@ -359,5 +391,5 @@ async def work(message):
 
     await message.reply(
         text
-    )
-
+        )
+        
