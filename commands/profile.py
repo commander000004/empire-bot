@@ -1,4 +1,5 @@
 # commands/profile.py
+
 import time
 
 from database import (
@@ -38,38 +39,47 @@ async def profile(message):
 
         jobs_text += f"🔓 {job}\n"
 
-now = int(time.time())
 
-boosters = ""
+    now = int(time.time())
 
-if user["time_booster_until"] > now:
+    boosters = ""
 
-    remain = user["time_booster_until"] - now
 
-    h = remain // 3600
+    if user["time_booster_until"] > now:
 
-    m = (remain % 3600) // 60
+        remain = user["time_booster_until"] - now
 
-    boosters += f"⏳ Time Booster: {h}h {m}m\n"
+        hours = remain // 3600
 
-if user["double_rewards_until"] > now:
+        minutes = (remain % 3600) // 60
 
-    remain = user["double_rewards_until"] - now
+        boosters += (
+            f"⏳ Time Booster: "
+            f"{hours}h {minutes}m\n"
+        )
 
-    h = remain // 3600
 
-    m = (remain % 3600) // 60
+    if user["double_rewards_until"] > now:
 
-    boosters += f"💰 Double Rewards: {h}h {m}m\n"
+        remain = user["double_rewards_until"] - now
 
-if boosters == "":
+        hours = remain // 3600
 
-    boosters = "❌ هیچ بوستری فعال نیست."
-    
+        minutes = (remain % 3600) // 60
+
+        boosters += (
+            f"💰 Double Rewards: "
+            f"{hours}h {minutes}m\n"
+        )
+
+
+    if boosters == "":
+
+        boosters = "❌ هیچ بوستری فعال نیست."
+
+
     text = f"""
 👤 پروفایل
-
-━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━
 
@@ -91,8 +101,6 @@ if boosters == "":
 🚀 بوسترهای فعال:
 
 {boosters}
-
-━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━
 
