@@ -120,11 +120,11 @@ async def buy(message, item):
         user["coin"] -= price
 
     # فعال کردن بوسترها
-    if item == "⏳ Time Booster":
+    if item == "تایم بوستر":
 
         user["time_booster_until"] = int(time.time()) + (12 * 60 * 60)
 
-    elif item == "💰 Double Rewards":
+    elif item == "دابل ریوارد":
 
         user["double_rewards_until"] = int(time.time()) + (12 * 60 * 60)
 
