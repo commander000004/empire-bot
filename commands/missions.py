@@ -109,6 +109,16 @@ def check_daily_mission(user):
 
     today = int(time.time() // 86400)
 
+    if not user.get("mission_name"):
+
+        user["mission_day"] = today
+
+        generate_mission(user)
+
+        update_user(user)
+
+        return True
+
 
     if user.get("mission_day") != today:
 
@@ -122,7 +132,6 @@ def check_daily_mission(user):
 
 
     return False
-
 
 
 async def mission(message):
