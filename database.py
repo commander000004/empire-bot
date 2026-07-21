@@ -126,7 +126,11 @@ def row_to_user(row):
             row[12]
         ),
         
-        "last_interest": row[13]
+        "last_interest": row[13],
+
+        "time_booster_until": row[14],
+
+        "double_rewards_until": row[15]
 
     }
 
@@ -215,13 +219,15 @@ def create_user(
                     job,
                     work_count,
                     banned,
-                    last_interest
+                    last_interest,
+                    time_booster_until,
+                    double_rewards_until
 
                 )
 
                 VALUES(
 
-                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s 
 
                 )
                 """,
@@ -254,6 +260,10 @@ def create_user(
 
                     False,
                     
+                    0,
+
+                    0,
+
                     0
 
 
@@ -301,7 +311,11 @@ def update_user(user):
 
                     banned=%s,
                     
-                    last_interest=%s
+                    last_interest=%s,
+
+                    time_booster_until=%s,
+
+                    double_rewards_until=%s
 
                 WHERE bale_id=%s
                 """,
@@ -336,6 +350,10 @@ def update_user(user):
                     bool(user["banned"]),
                     
                     user["last_interest"],
+
+                    user["time_booster_until"],
+
+                    user["double_rewards_until"],
 
                     user["bale_id"]
 
