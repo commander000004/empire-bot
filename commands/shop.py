@@ -33,12 +33,12 @@ SHOP = {
         "price": 15000
     },
 
-    "⏳ Time Booster": {
+    "تایم بوستر": {
     "price": 50,
     "currency": "gem"
 },
 
-    "💰 Double Rewards": {
+    "دابل ریوارد": {
     "price": 100,
     "currency": "gem"
 }
