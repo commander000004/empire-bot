@@ -201,8 +201,7 @@ async def work(message):
             )
 
 
-            return
-                coin = random.randint(
+            return    coin = random.randint(
         job["reward_min"],
         job["reward_max"]
     )
@@ -391,5 +390,4 @@ async def work(message):
 
     await message.reply(
         text
-        )
-        
+            )
