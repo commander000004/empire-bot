@@ -1,5 +1,4 @@
-# commands/missions.py
-
+import random
 import time
 
 from database import (
@@ -7,38 +6,145 @@ from database import (
     update_user
 )
 
-
 MISSIONS = [
 
     {
-        "name": "یک بار کار کن",
-        "need": 1,
-        "reward_coin": 500,
-        "reward_xp": 20
+        "id": "work3",
+        "name": "۳ بار کار کن",
+        "type": "work",
+        "target": 3,
+        "coin": 1000,
+        "gem": 1,
+        "xp": 20
     },
 
     {
-        "name": "سه بار کار کن",
-        "need": 3,
-        "reward_coin": 1500,
-        "reward_xp": 50
+        "id": "work5",
+        "name": "۵ بار کار کن",
+        "type": "work",
+        "target": 5,
+        "coin": 2500,
+        "gem": 2,
+        "xp": 40
     },
 
     {
-        "name": "پنج بار کار کن",
-        "need": 5,
-        "reward_coin": 3000,
-        "reward_xp": 100
+        "id": "xp50",
+        "name": "۵۰ XP کسب کن",
+        "type": "xp",
+        "target": 50,
+        "coin": 1500,
+        "gem": 1,
+        "xp": 25
+    },
+
+    {
+        "id": "xp100",
+        "name": "۱۰۰ XP کسب کن",
+        "type": "xp",
+        "target": 100,
+        "coin": 3000,
+        "gem": 2,
+        "xp": 50
+    },
+
+    {
+        "id": "coin5000",
+        "name": "۵۰۰۰ Coin کسب کن",
+        "type": "coin",
+        "target": 5000,
+        "coin": 2000,
+        "gem": 1,
+        "xp": 30
+    },
+
+    {
+        "id": "coin10000",
+        "name": "۱۰۰۰۰ Coin کسب کن",
+        "type": "coin",
+        "target": 10000,
+        "coin": 4000,
+        "gem": 2,
+        "xp": 60
+    },
+
+    {
+        "id": "buy1",
+        "name": "۱ آیتم بخر",
+        "type": "buy",
+        "target": 1,
+        "coin": 1500,
+        "gem": 1,
+        "xp": 20
+    },
+
+    {
+        "id": "food1",
+        "name": "۱ غذا مصرف کن",
+        "type": "food",
+        "target": 1,
+        "coin": 1000,
+        "gem": 1,
+        "xp": 15
+    },
+
+    {
+        "id": "food2",
+        "name": "۲ غذا مصرف کن",
+        "type": "food",
+        "target": 2,
+        "coin": 2500,
+        "gem": 2,
+        "xp": 30
     }
 
 ]
 
 
-async def missions(message):
+def generate_daily_missions(user):
 
-    user = get_user(
-        str(message.author.id)
-    )
+    selected = random.sample(MISSIONS, 3)
+
+    user["daily_missions"] = []
+
+    for mission in selected:
+
+        user["daily_missions"].append({
+
+            "id": mission["id"],
+            "name": mission["name"],
+            "type": mission["type"],
+            "target": mission["target"],
+            "progress": 0,
+            "done": False,
+            "coin": mission["coin"],
+            "gem": mission["gem"],
+            "xp": mission["xp"]
+
+        })
+
+    user["daily_bonus"] = False
+    user["daily_reset"] = int(time.time() // 86400)
+
+
+def check_daily_reset(user):
+
+    today = int(time.time() // 86400)
+
+    if user.get("daily_reset", -1) != today:
+
+        generate_daily_missions(user)
+
+        update_user(user)
+
+        return True
+
+    return False
+
+
+async def mission(message):
+
+    user = get_user(str(message.author.id))
 
     if not user:
 
@@ -48,74 +154,57 @@ async def missions(message):
 
         return
 
-    count = user["work_count"]
+    check_daily_reset(user)
 
-    text = "🎯 ماموریت‌های امروز\n\n"
+    text = "🎯 چالش‌های روزانه\n\n"
 
-    for mission in MISSIONS:
+    completed = 0
 
-        done = "✅" if count >= mission["need"] else "❌"
+    for m in user["daily_missions"]:
+
+        if m["done"]:
+            completed += 1
+            status = "✅"
+        else:
+            status = "⏳"
 
         text += (
-            f"{done} {mission['name']}\n"
-            f"📈 پیشرفت: {min(count, mission['need'])}/{mission['need']}\n"
-            f"💰 {mission['reward_coin']} Coin\n"
-            f"✨ {mission['reward_xp']} XP\n\n"
+            f"{status} {m['name']}\n"
+            f"📈 {m['progress']}/{m['target']}\n"
+            f"🎁 {m['coin']} Coin | {m['gem']} Gem | {m['xp']} XP\n\n"
         )
 
-    text += (
-        "━━━━━━━━━━━━━━\n"
-        "🎁 برای دریافت جایزه:\n"
-        "دریافت جایزه"
-    )
+    if completed == 3:
+
+        if not user["daily_bonus"]:
+
+            user["coin"] += 5000
+            user["gem"] += 3
+            user["xp"] += 100
+
+            user["daily_bonus"] = True
+
+            update_user(user)
+
+            text += (
+                "🎉 هر ۳ مأموریت انجام شد!\n\n"
+                "🏆 جایزه ویژه دریافت کردی:\n"
+                "💰 5000 Coin\n"
+                "💎 3 Gem\n"
+                "✨ 100 XP\n\n"
+            )
+
+        else:
+
+            text += (
+                "🏆 جایزه ویژه امروز را قبلاً دریافت کرده‌ای.\n\n"
+            )
+
+    remain = 86400 - (int(time.time()) % 86400)
+
+    h = remain // 3600
+    m = (remain % 3600) // 60
+
+    text += f"⏳ ریست بعدی: {h}h {m}m"
 
     await message.reply(text)
-
-
-async def claim_reward(message):
-
-    user = get_user(
-        str(message.author.id)
-    )
-
-    if not user:
-
-        return
-
-    count = user["work_count"]
-
-    reward = None
-
-    for mission in reversed(MISSIONS):
-
-        if count >= mission["need"]:
-
-            reward = mission
-
-            break
-
-    if not reward:
-
-        await message.reply(
-            "❌ هنوز هیچ ماموریتی را کامل نکرده‌ای."
-        )
-
-        return
-
-    user["coin"] += reward["reward_coin"]
-    user["xp"] += reward["reward_xp"]
-
-    # ریست ماموریت
-    user["work_count"] = 0
-
-    update_user(user)
-
-    await message.reply(
-
-        f"🎉 جایزه ماموریت دریافت شد.\n\n"
-
-        f"💰 +{reward['reward_coin']} Coin\n"
-
-        f"✨ +{reward['reward_xp']} XP"
-
-    )
