@@ -54,7 +54,6 @@ MISSIONS = [
 ]
 
 
-
 def update_mission(user, mission_type, amount=1):
 
     if user.get("mission_done"):
@@ -72,12 +71,16 @@ def update_mission(user, mission_type, amount=1):
 
     if user["mission_progress"] >= user["mission_goal"]:
 
+        user["mission_progress"] = user["mission_goal"]
+
         user["mission_done"] = True
 
         user["coin"] += user["mission_reward_coin"]
 
         user["xp"] += user["mission_reward_xp"]
 
+
+    update_user(user)
 
 
 
@@ -102,7 +105,6 @@ def generate_mission(user):
 
 
 
-
 def check_daily_mission(user):
 
     today = int(time.time() // 86400)
@@ -123,7 +125,6 @@ def check_daily_mission(user):
 
 
 
-
 async def mission(message):
 
     user = get_user(
@@ -140,8 +141,10 @@ async def mission(message):
         return
 
 
-
     check_daily_mission(user)
+
+
+    update_user(user)
 
 
     text = f"""
@@ -161,7 +164,6 @@ async def mission(message):
 
 ✨ {user['mission_reward_xp']} XP
 
-
 """
 
 
@@ -172,7 +174,6 @@ async def mission(message):
     else:
 
         text += "💪 ادامه بده!"
-
 
 
     await message.reply(text)
