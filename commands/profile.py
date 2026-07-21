@@ -1,5 +1,3 @@
-# commands/profile.py
-
 import time
 
 from database import (
@@ -13,100 +11,109 @@ from unlocks import get_unlocked_jobs
 
 async def profile(message):
 
-    user_id = str(message.author.id)
+    # اگر ریپلای بود، پروفایل شخص ریپلای‌شده را نمایش بده
+    if (
+        getattr(message, "reply_to_message", None)
+        and getattr(message.reply_to_message, "author", None)
+    ):
+        target = message.reply_to_message.author
+    else:
+        target = message.author
+
+    user_id = str(target.id)
 
     user = get_user(user_id)
-
 
     if not user:
 
         create_user(
             user_id,
-            message.author.first_name
+            target.first_name
         )
 
         user = get_user(user_id)
-
 
     jobs = get_unlocked_jobs(
         user["level"]
     )
 
-
     jobs_text = ""
 
     for job in jobs:
-
         jobs_text += f"🔓 {job}\n"
-
 
     now = int(time.time())
 
     boosters = ""
-
 
     if user["time_booster_until"] > now:
 
         remain = user["time_booster_until"] - now
 
         hours = remain // 3600
-
         minutes = (remain % 3600) // 60
 
         boosters += (
-            f"⏳ Time Booster: "
-            f"{hours}h {minutes}m\n"
+            f"⏳ تایم بوستر: "
+            f"{hours} ساعت "
+            f"{minutes} دقیقه\n"
         )
-
 
     if user["double_rewards_until"] > now:
 
         remain = user["double_rewards_until"] - now
 
         hours = remain // 3600
-
         minutes = (remain % 3600) // 60
 
         boosters += (
-            f"💰 Double Rewards: "
-            f"{hours}h {minutes}m\n"
+            f"💰 دابل ریوارد: "
+            f"{hours} ساعت "
+            f"{minutes} دقیقه\n"
         )
 
-
     if boosters == "":
-
         boosters = "❌ هیچ بوستری فعال نیست."
 
+    current_job = user["job"] if user["job"] else "❌ ندارد"
 
     text = f"""
-👤 پروفایل
+👤 پروفایل بازیکن
 
 ━━━━━━━━━━━━━━
 
-🆔 ID: {user['bale_id']}
+🆔 آیدی عددی:
+{user["bale_id"]}
 
-نام: {user['name']}
+👤 نام:
+{user["name"]}
 
-💰 Coin: {user['coin']:,}
+━━━━━━━━━━━━━━
 
-💎 Gem: {user['gem']}
+💰 Coin:
+{user["coin"]:,}
 
-⭐ Level: {user['level']}
+💎 Gem:
+{user["gem"]}
+
+━━━━━━━━━━━━━━
+
+⭐ Level:
+{user["level"]}
 
 ✨ XP:
-{user['xp']}/{xp_need(user['level'])}
-
-━━━━━━━━━━━━━━
-
-🚀 بوسترهای فعال:
-
-{boosters}
+{user["xp"]}/{xp_need(user["level"])}
 
 ━━━━━━━━━━━━━━
 
 👷 شغل فعلی:
+{current_job}
 
-{user['job'] if user['job'] else "❌ ندارد"}
+━━━━━━━━━━━━━━
+
+🚀 بوسترها:
+
+{boosters}
 
 ━━━━━━━━━━━━━━
 
@@ -114,6 +121,5 @@ async def profile(message):
 
 {jobs_text}
 """
-
 
     await message.reply(text)
