@@ -192,7 +192,8 @@ async def work(message):
     text += f"💰 درآمد: +{coin} Coin\n"
 
     text += f"✨ تجربه: +{xp} XP\n\n"
-        if got_gem:
+      
+    if got_gem:
 
         text += "💎 خوش‌شانس بودی! +1 Gem پیدا کردی.\n\n"
 
