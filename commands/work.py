@@ -2,7 +2,6 @@
 
 import random
 import time
-GEM_CHANCE = 0.015
 
 from database import (
     get_user,
@@ -16,6 +15,7 @@ from level import (
     check_level
 )
 
+GEM_CHANCE = 0.015
 
 TEXTS = {
 
@@ -71,56 +71,35 @@ TEXTS = {
 }
 
 
-
 async def work(message):
 
-    user = get_user(
-        str(message.author.id)
-    )
-
+    user = get_user(str(message.author.id))
 
     if not user:
-
         await message.reply(
             "❌ ابتدا پروفایل بساز."
         )
-
         return
 
-
-
     if not user["job"]:
-
         await message.reply(
             "❌ ابتدا یک شغل انتخاب کن."
         )
-
         return
 
-
-
     job_name = user["job"]
-
     job = JOBS[job_name]
-
-
 
     now = int(time.time())
 
-
     cooldown = job["cooldown"]
 
+    if user["time_booster_until"] > now:
+        cooldown = cooldown // 2
 
-if user["time_booster_until"] > now:
-
-    cooldown = cooldown // 2
-
-
-remain = cooldown - (
-    now - user["last_work"]
-)
+    remain = cooldown - (
+        now - user["last_work"]
     )
-
 
     if remain > 0:
 
@@ -134,40 +113,27 @@ remain = cooldown - (
 
         return
 
-
-
     user["last_work"] = now
-
 
     user["work_count"] += 1
 
-
     food_used = 0
-
-
 
     if user["work_count"] >= job["food"]:
 
-
         if "غذا" in user["inventory"]:
 
-            user["inventory"].remove(
-                "غذا"
-            )
+            user["inventory"].remove("غذا")
 
             user["work_count"] = 0
 
             food_used = 1
-
-
 
         elif user["gem"] > 0:
 
             user["gem"] -= 1
 
             user["work_count"] = 0
-
-
 
         else:
 
@@ -184,58 +150,40 @@ remain = cooldown - (
 
             return
 
-
-
     coin = random.randint(
         job["reward_min"],
         job["reward_max"]
     )
-
 
     xp = random.randint(
         job["xp_min"],
         job["xp_max"]
     )
 
+    if user["double_rewards_until"] > now:
+        coin *= 2
+        xp *= 2
 
-if user["double_rewards_until"] > now:
-
-    coin *= 2
-    xp *= 2
-
-    
     user["coin"] += coin
-
     user["xp"] += xp
 
     got_gem = False
 
+    if random.random() <= GEM_CHANCE:
 
-if random.random() <= GEM_CHANCE:
+        user["gem"] += 1
 
-    user["gem"] += 1
-
-    got_gem = True
-
-
+        got_gem = True
 
     level_up = check_level(user)
 
-
-
     update_user(user)
 
-
-
     text = ""
-
-
 
     for line in TEXTS[job_name]:
 
         text += line + "\n"
-
-
 
     text += "\n"
 
@@ -244,10 +192,37 @@ if random.random() <= GEM_CHANCE:
     text += f"💰 درآمد: +{coin} Coin\n"
 
     text += f"✨ تجربه: +{xp} XP\n\n"
+        if got_gem:
 
-    if got_gem:
+        text += "💎 خوش‌شانس بودی! +1 Gem پیدا کردی.\n\n"
 
-    text += "💎 خوش‌شانس بودی! +1 Gem پیدا کردی.\n\n"
+    if user["time_booster_until"] > now:
+
+        remain_time = user["time_booster_until"] - now
+
+        hours = remain_time // 3600
+
+        minutes = (remain_time % 3600) // 60
+
+        text += (
+            f"⏳ Time Booster فعال: "
+            f"{hours}h {minutes}m\n"
+        )
+
+    if user["double_rewards_until"] > now:
+
+        remain_time = user["double_rewards_until"] - now
+
+        hours = remain_time // 3600
+
+        minutes = (remain_time % 3600) // 60
+
+        text += (
+            f"💰 Double Rewards فعال: "
+            f"{hours}h {minutes}m\n"
+        )
+
+    text += "\n"
 
     text += (
         f"📈 XP: "
@@ -260,8 +235,6 @@ if random.random() <= GEM_CHANCE:
         f"{user['level']}"
     )
 
-
-
     if level_up:
 
         text += (
@@ -270,7 +243,5 @@ if random.random() <= GEM_CHANCE:
             f"⭐ Level جدید: {user['level']}"
 
         )
-
-
 
     await message.reply(text)
