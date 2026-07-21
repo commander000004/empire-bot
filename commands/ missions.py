@@ -208,3 +208,57 @@ async def mission(message):
     text += f"⏳ ریست بعدی: {h}h {m}m"
 
     await message.reply(text)
+
+def update_mission(user, mission_type, amount=1):
+
+    if "daily_missions" not in user:
+        return
+
+
+    for mission in user["daily_missions"]:
+
+        if mission["done"]:
+            continue
+
+
+        if mission["type"] != mission_type:
+            continue
+
+
+        mission["progress"] += amount
+
+
+        if mission["progress"] >= mission["target"]:
+
+            mission["progress"] = mission["target"]
+
+            mission["done"] = True
+
+
+            user["coin"] += mission["coin"]
+
+            user["gem"] += mission["gem"]
+
+            user["xp"] += mission["xp"]
+
+
+    # بررسی جایزه کامل کردن همه مأموریت‌ها
+
+    all_done = True
+
+    for mission in user["daily_missions"]:
+
+        if not mission["done"]:
+            all_done = False
+            break
+
+
+    if all_done and not user.get("daily_bonus", False):
+
+        user["coin"] += 5000
+
+        user["gem"] += 3
+
+        user["xp"] += 100
+
+        user["daily_bonus"] = True
