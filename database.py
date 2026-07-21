@@ -67,7 +67,23 @@ def init_db():
 
                     work_count INTEGER NOT NULL,
 
-                    banned BOOLEAN NOT NULL DEFAULT FALSE
+                    banned BOOLEAN NOT NULL DEFAULT FALSE,
+
+                    mission_day INTEGER NOT NULL DEFAULT 0,
+
+                    mission_type TEXT,
+
+                    mission_name TEXT,
+
+                    mission_goal INTEGER DEFAULT 0,
+
+                    mission_progress INTEGER DEFAULT 0,
+
+                    mission_done BOOLEAN DEFAULT FALSE,
+
+                    mission_reward_coin INTEGER DEFAULT 0,
+
+                    mission_reward_xp INTEGER DEFAULT 0
 
                 )
                 """
