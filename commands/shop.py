@@ -1,4 +1,5 @@
 # commands/shop.py
+import time
 
 from database import (
     get_user,
@@ -30,7 +31,17 @@ SHOP = {
 
     "لپتاپ": {
         "price": 15000
-    }
+    },
+
+    "⏳ Time Booster": {
+    "price": 50,
+    "currency": "gem"
+},
+
+    "💰 Double Rewards": {
+    "price": 100,
+    "currency": "gem"
+}
 
 }
 
@@ -43,7 +54,7 @@ async def shop(message):
 
         text += (
             f"📦 {item}\n"
-            f"💰 {data['price']} Coin\n\n"
+            f"{'💎' if data.get('currency') == 'gem' else '💰'} {data['price']} {'Gem' if data.get('currency') == 'gem' else 'Coin'}\n\n"
         )
 
     text += (
@@ -79,6 +90,27 @@ async def buy(message, item):
 
     price = SHOP[item]["price"]
 
+currency = SHOP[item].get(
+    "currency",
+    "coin"
+)
+
+
+if currency == "gem":
+
+    if user["gem"] < price:
+
+        await message.reply(
+            "❌ Gem کافی نداری."
+        )
+
+        return
+
+    user["gem"] -= price
+
+
+else:
+
     if user["coin"] < price:
 
         await message.reply(
@@ -88,6 +120,23 @@ async def buy(message, item):
         return
 
     user["coin"] -= price
+
+
+
+# فعال کردن بوسترها
+
+if item == "⏳ Time Booster":
+
+    user["time_booster_until"] = int(time.time()) + (12 * 60 * 60)
+
+
+elif item == "💰 Double Rewards":
+
+    user["double_rewards_until"] = int(time.time()) + (12 * 60 * 60)
+
+
+else:
+
     user["inventory"].append(item)
 
     update_user(user)
@@ -98,7 +147,7 @@ async def buy(message, item):
 
         f"📦 {item}\n"
 
-        f"💰 {price} Coin"
+        f"{'💎' if currency == 'gem' else '💰'} {price} {'Gem' if currency == 'gem' else 'Coin'}"
 
     )
 
