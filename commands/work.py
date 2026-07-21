@@ -15,7 +15,11 @@ from level import (
     check_level
 )
 
+from commands.missions import update_mission
+
+
 GEM_CHANCE = 0.015
+
 
 TEXTS = {
 
@@ -73,33 +77,49 @@ TEXTS = {
 
 async def work(message):
 
-    user = get_user(str(message.author.id))
+    user = get_user(
+        str(message.author.id)
+    )
+
 
     if not user:
+
         await message.reply(
             "❌ ابتدا پروفایل بساز."
         )
+
         return
 
+
     if not user["job"]:
+
         await message.reply(
             "❌ ابتدا یک شغل انتخاب کن."
         )
+
         return
 
+
     job_name = user["job"]
+
     job = JOBS[job_name]
+
 
     now = int(time.time())
 
+
     cooldown = job["cooldown"]
 
+
     if user["time_booster_until"] > now:
+
         cooldown = cooldown // 2
+
 
     remain = cooldown - (
         now - user["last_work"]
     )
+
 
     if remain > 0:
 
@@ -113,27 +133,41 @@ async def work(message):
 
         return
 
+
     user["last_work"] = now
 
     user["work_count"] += 1
 
+
     food_used = 0
+
 
     if user["work_count"] >= job["food"]:
 
+
         if "غذا" in user["inventory"]:
 
-            user["inventory"].remove("غذا")
+            user["inventory"].remove(
+                "غذا"
+            )
 
             user["work_count"] = 0
 
             food_used = 1
+
+
+            update_mission(
+                user,
+                "food"
+            )
+
 
         elif user["gem"] > 0:
 
             user["gem"] -= 1
 
             user["work_count"] = 0
+
 
         else:
 
@@ -142,32 +176,64 @@ async def work(message):
                 user["xp"] - 10
             )
 
+
             await message.reply(
                 "🍞 غذای شما تمام شده!\n"
                 "❌ غذا بخرید یا از جم استفاده کنید.\n"
                 "✨ 10 XP از شما کم شد."
             )
 
-            return
-
-    coin = random.randint(
+            return    
+            
+        coin = random.randint(
         job["reward_min"],
         job["reward_max"]
     )
+
 
     xp = random.randint(
         job["xp_min"],
         job["xp_max"]
     )
 
+
     if user["double_rewards_until"] > now:
+
         coin *= 2
+
         xp *= 2
 
+
+
     user["coin"] += coin
+
     user["xp"] += xp
 
+
+
+    update_mission(
+        user,
+        "work"
+    )
+
+
+    update_mission(
+        user,
+        "coin",
+        coin
+    )
+
+
+    update_mission(
+        user,
+        "xp",
+        xp
+    )
+
+
+
     got_gem = False
+
 
     if random.random() <= GEM_CHANCE:
 
@@ -175,55 +241,98 @@ async def work(message):
 
         got_gem = True
 
-    level_up = check_level(user)
 
-    update_user(user)
+
+    level_up = check_level(
+        user
+    )
+
+
+    update_user(
+        user
+    )
+
+
 
     text = ""
+
 
     for line in TEXTS[job_name]:
 
         text += line + "\n"
 
+
+
     text += "\n"
 
-    text += f"🍞 غذا مصرف شده: {food_used}\n\n"
+    text += (
+        f"🍞 غذا مصرف شده: {food_used}\n\n"
+    )
 
-    text += f"💰 درآمد: +{coin} Coin\n"
 
-    text += f"✨ تجربه: +{xp} XP\n\n"
-      
+    text += (
+        f"💰 درآمد: +{coin} Coin\n"
+    )
+
+
+    text += (
+        f"✨ تجربه: +{xp} XP\n\n"
+    )
+
+
+
     if got_gem:
 
-        text += "💎 خوش‌شانس بودی! +1 Gem پیدا کردی.\n\n"
+        text += (
+            "💎 خوش‌شانس بودی! "
+            "+1 Gem پیدا کردی.\n\n"
+        )
+
+
 
     if user["time_booster_until"] > now:
 
-        remain_time = user["time_booster_until"] - now
+        remain_time = (
+            user["time_booster_until"] - now
+        )
 
         hours = remain_time // 3600
 
-        minutes = (remain_time % 3600) // 60
+        minutes = (
+            remain_time % 3600
+        ) // 60
+
 
         text += (
             f"⏳ Time Booster فعال: "
             f"{hours}h {minutes}m\n"
         )
 
+
+
     if user["double_rewards_until"] > now:
 
-        remain_time = user["double_rewards_until"] - now
+        remain_time = (
+            user["double_rewards_until"] - now
+        )
 
         hours = remain_time // 3600
 
-        minutes = (remain_time % 3600) // 60
+        minutes = (
+            remain_time % 3600
+        ) // 60
+
 
         text += (
             f"💰 Double Rewards فعال: "
             f"{hours}h {minutes}m\n"
         )
 
+
+
     text += "\n"
+
+
 
     text += (
         f"📈 XP: "
@@ -231,18 +340,24 @@ async def work(message):
         f"{xp_need(user['level'])}\n"
     )
 
+
     text += (
         f"⭐ Level: "
         f"{user['level']}"
     )
 
+
+
     if level_up:
 
         text += (
-
             "\n\n🎉 LEVEL UP!\n"
             f"⭐ Level جدید: {user['level']}"
-
         )
 
-    await message.reply(text)
+
+
+    await message.reply(
+        text
+    )
+
