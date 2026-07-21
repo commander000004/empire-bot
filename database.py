@@ -85,6 +85,100 @@ def init_db():
                 """
             )
 
+def init_db():
+
+    with connect() as db:
+
+        with db.cursor() as cur:
+
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS users(
+
+                    bale_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    coin INTEGER NOT NULL,
+                    gem INTEGER NOT NULL,
+                    level INTEGER NOT NULL,
+                    xp INTEGER NOT NULL,
+                    last_work BIGINT NOT NULL,
+                    last_interest BIGINT NOT NULL,
+                    bank INTEGER NOT NULL,
+                    card TEXT,
+                    inventory TEXT NOT NULL,
+                    job TEXT,
+                    work_count INTEGER NOT NULL,
+                    banned BOOLEAN NOT NULL DEFAULT FALSE,
+                    time_booster_until BIGINT NOT NULL DEFAULT 0,
+                    double_rewards_until BIGINT NOT NULL DEFAULT 0
+
+                )
+                """
+            )
+
+
+            # اضافه کردن ستون‌های جدید اگر وجود نداشتند
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_day INTEGER DEFAULT 0
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_type TEXT
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_name TEXT
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_goal INTEGER DEFAULT 0
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_progress INTEGER DEFAULT 0
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_done BOOLEAN DEFAULT FALSE
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_reward_coin INTEGER DEFAULT 0
+                """
+            )
+
+            cur.execute(
+                """
+                ALTER TABLE users
+                ADD COLUMN IF NOT EXISTS mission_reward_xp INTEGER DEFAULT 0
+                """
+            )
+
+
+        db.commit()
+        
+
         db.commit()
 
 
