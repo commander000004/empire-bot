@@ -242,9 +242,25 @@ def row_to_user(row):
 
         "double_rewards_until": row[15],
 
+        "mission_day": row[16],
+
+        "mission_type": row[17],
+
+        "mission_name": row[18],
+
+        "mission_goal": row[19],
+
+        "mission_progress": row[20],
+
+        "mission_done": bool(row[21]),
+
+        "mission_reward_coin": row[22],
+
+        "mission_reward_xp": row[23],
+        
         "daily_missions": [],
         "daily_reset": 0,
-        "daily_bonus": False,
+        "daily_bonus": False
 
     }
 
@@ -429,7 +445,23 @@ def update_user(user):
 
                     time_booster_until=%s,
 
-                    double_rewards_until=%s
+                    double_rewards_until=%s,
+
+                    mission_day=%s,
+
+                    mission_type=%s,
+
+                    mission_name=%s,
+
+                    mission_goal=%s,
+
+                    mission_progress=%s,
+
+                    mission_done=%s,
+
+                    mission_reward_coin=%s,
+
+                ‌‌    mission_reward_xp=%s
 
                 WHERE bale_id=%s
                 """,
@@ -468,6 +500,22 @@ def update_user(user):
                     user["time_booster_until"],
 
                     user["double_rewards_until"],
+
+                    user["mission_day"],
+
+                    user["mission_type"],
+
+                    user["mission_name"],
+
+                    user["mission_goal"],
+
+                    user["mission_progress"],
+
+                    user["mission_done"],
+
+                    user["mission_reward_coin"],
+
+                    user["mission_reward_xp"],
 
                     user["bale_id"]
 
