@@ -3,6 +3,7 @@ import random
 from commands.profile import profile
 from commands.jobs import jobs, choose_job
 from commands.work import work
+from commands.missions import mission
 
 from commands.bank import (
     bank,
@@ -40,7 +41,6 @@ from database import (
     add_group,
     get_user
 )
-
 
 async def handle_message(message, bot):
 
@@ -295,7 +295,20 @@ async def handle_message(message, bot):
         await work(message)
 
         return
+# =====================
+# ماموریت
+# =====================
 
+    if text in (
+    "ماموریت",
+    "مأموریت",
+    "mission"
+):
+
+        await mission(message)
+
+        return
+    
     # =====================
     # بانک
     # =====================
