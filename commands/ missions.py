@@ -111,6 +111,7 @@ def check_mission(user):
 
 
 
+print("MISSIONS UPDATED")
 def update_mission(user, mission_type, amount=1):
 
 
