@@ -461,7 +461,7 @@ def update_user(user):
 
                     mission_reward_coin=%s,
 
-                ‌‌    mission_reward_xp=%s
+                    mission_reward_xp=%s
 
                 WHERE bale_id=%s
                 """,
