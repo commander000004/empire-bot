@@ -2,6 +2,7 @@
 
 import random
 import time
+GEM_CHANCE = 0.015
 
 from database import (
     get_user,
@@ -107,8 +108,17 @@ async def work(message):
     now = int(time.time())
 
 
-    remain = job["cooldown"] - (
-        now - user["last_work"]
+    cooldown = job["cooldown"]
+
+
+if user["time_booster_until"] > now:
+
+    cooldown = cooldown // 2
+
+
+remain = cooldown - (
+    now - user["last_work"]
+)
     )
 
 
@@ -188,10 +198,24 @@ async def work(message):
     )
 
 
+if user["double_rewards_until"] > now:
 
+    coin *= 2
+    xp *= 2
+
+    
     user["coin"] += coin
 
     user["xp"] += xp
+
+    got_gem = False
+
+
+if random.random() <= GEM_CHANCE:
+
+    user["gem"] += 1
+
+    got_gem = True
 
 
 
@@ -220,6 +244,10 @@ async def work(message):
     text += f"💰 درآمد: +{coin} Coin\n"
 
     text += f"✨ تجربه: +{xp} XP\n\n"
+
+    if got_gem:
+
+    text += "💎 خوش‌شانس بودی! +1 Gem پیدا کردی.\n\n"
 
     text += (
         f"📈 XP: "
