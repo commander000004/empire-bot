@@ -130,7 +130,11 @@ def row_to_user(row):
 
         "time_booster_until": row[14],
 
-        "double_rewards_until": row[15]
+        "double_rewards_until": row[15],
+
+        "daily_missions": [],
+        "daily_reset": 0,
+        "daily_bonus": False,
 
     }
 
