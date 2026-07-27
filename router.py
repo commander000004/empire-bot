@@ -51,12 +51,6 @@ async def handle_message(message, bot):
     text = message.text.strip()
     text_lower = text.lower()
 
-    if text.startswith("انتقال کوین"):
-
-        await message.reply("✅ دستور انتقال شناسایی شد")
-
-        return
-
     artin_keywords = [
         "ارتین",
         "آرتین",
@@ -381,34 +375,36 @@ async def handle_message(message, bot):
 
         return
 
-        # =====================
-    # انتقال کوین
-    # =====================
+# =====================
+# انتقال کوین
+# =====================
 
-    if text.startswith("انتقال کوین"):
+if text.startswith("انتقال کوین"):
 
-        try:
+    try:
 
-            data = text.split()
+        data = text.split()
 
-            amount = int(data[2])
+        amount = int(data[2])
 
-            await transfer_coin(
-                message,
-                amount
-            )
+        await transfer_coin(
+            message,
+            amount
+        )
 
-        except:
+    except Exception as e:
 
-            await message.reply(
-                "❌ فرمت اشتباه.\n\n"
-                "فرمت صحیح:\n"
-                "انتقال کوین عدد + ریپلای\n\n"
-                "مثال:\n"
-                "انتقال کوین 5000"
-            )
+        print("TRANSFER ERROR:", e)
 
-        return
+        await message.reply(
+            "❌ فرمت اشتباه.\n\n"
+            "فرمت صحیح:\n"
+            "انتقال کوین عدد + ریپلای\n\n"
+            "مثال:\n"
+            "انتقال کوین 5000"
+        )
+
+    return   
     
     # =====================
     # کارت به کارت
