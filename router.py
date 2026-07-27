@@ -4,6 +4,7 @@ from commands.profile import profile
 from commands.jobs import jobs, choose_job
 from commands.work import work
 from commands.missions import mission
+from commands.transfer import transfer_coin
 
 from commands.bank import (
     bank,
@@ -374,6 +375,35 @@ async def handle_message(message, bot):
 
         return
 
+        # =====================
+    # انتقال کوین
+    # =====================
+
+    if text.startswith("انتقال کوین"):
+
+        try:
+
+            data = text.split()
+
+            amount = int(data[2])
+
+            await transfer_coin(
+                message,
+                amount
+            )
+
+        except:
+
+            await message.reply(
+                "❌ فرمت اشتباه.\n\n"
+                "فرمت صحیح:\n"
+                "انتقال کوین عدد + ریپلای\n\n"
+                "مثال:\n"
+                "انتقال کوین 5000"
+            )
+
+        return
+    
     # =====================
     # کارت به کارت
     # =====================
