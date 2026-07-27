@@ -51,6 +51,12 @@ async def handle_message(message, bot):
     text = message.text.strip()
     text_lower = text.lower()
 
+    if text.startswith("انتقال کوین"):
+
+    await message.reply("✅ دستور انتقال شناسایی شد")
+
+    return
+
     artin_keywords = [
         "ارتین",
         "آرتین",
