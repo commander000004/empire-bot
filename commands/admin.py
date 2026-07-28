@@ -10,7 +10,8 @@ from database import (
     get_all_groups,
     set_user_value,
     get_user,
-    set_ban
+    set_ban,
+    update_user
 )
 
 
@@ -240,3 +241,71 @@ async def broadcast(message, bot, text):
     print(
         f"[ADMIN] Broadcast by {message.author.id}"
                    )
+    # ==========================
+# Global Coin
+# ==========================
+
+async def global_coin(message, bot, amount, reason):
+
+    if not is_owner(message.author.id):
+        return
+
+    users = get_all_users()
+
+    success = 0
+    failed = 0
+
+    for user in users:
+
+        user["coin"] += amount
+
+        update_user(user)
+
+        try:
+
+            await bot.send_message(
+
+                chat_id=user["bale_id"],
+
+                text=(
+                    "🎉 هدیه همگانی Empire\n\n"
+
+                    "سلام 👋\n\n"
+
+                    "🎁 مدیریت Empire Bot برای تمام بازیکنان هدیه ارسال کرده است.\n\n"
+
+                    f"📝 دلیل:\n{reason}\n\n"
+
+                    f"💰 هدیه شما:\n"
+                    f"+{amount:,} Coin\n\n"
+
+                    "❤️ از همراهی شما سپاسگزاریم."
+                )
+
+            )
+
+            success += 1
+
+        except Exception as e:
+
+            print(e)
+
+            failed += 1
+
+    await message.reply(
+
+        f"✅ هدیه همگانی انجام شد.\n\n"
+
+        f"👥 کاربران: {len(users)}\n"
+
+        f"💰 هدیه هر نفر: {amount:,} Coin\n\n"
+
+        f"📨 موفق: {success}\n"
+
+        f"❌ ناموفق: {failed}"
+
+        )
+
+
+
+
