@@ -28,7 +28,8 @@ from commands.admin import (
     set_player,
     ban_user,
     unban_user,
-    broadcast
+    broadcast,
+    global_coin
 )
 
 from commands.leaderboard import (
@@ -196,6 +197,39 @@ async def handle_message(message, bot):
 
         return
 
+        # =====================
+    # Global Coin
+    # =====================
+
+    if text.startswith("همگانی کوین "):
+
+        try:
+
+            parts = text.split(maxsplit=3)
+
+            amount = int(parts[2])
+
+            reason = parts[3]
+
+            await global_coin(
+                message,
+                bot,
+                amount,
+                reason
+            )
+
+        except:
+
+            await message.reply(
+
+                "❌ فرمت صحیح:\n\n"
+
+                "همگانی کوین 5000 به مناسبت افتتاح نسخه 3.3"
+
+            )
+
+        return
+        
     # =====================
     # Broadcast
     # =====================
